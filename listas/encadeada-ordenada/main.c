@@ -12,6 +12,17 @@ typedef struct celula {
   struct celula *prox;
 } Celula;
 
+void limparBuffer()
+{
+  int c;
+  while ((c = getchar()) != '\n' && c != EOF)
+    ;
+}
+
+void removerQuebraLinha(char *str) {
+  str[strcspn(str, "\n")] = 0;
+}
+
 void inicializarLista(Celula **lista) {
   (*lista) = NULL;
 }
@@ -21,6 +32,55 @@ int listaVazia(Celula **lista) {
     return 1;
 
   return 0;
+}
+
+// FUNÇÕES AUXILIARES PARA INTERFACE
+void limparTela() {
+  #ifdef _WIN32
+    system("cls");
+  #else
+    system("clear");
+  #endif
+}
+
+void pausar() {
+  printf("\nPressione ENTER para continuar...");
+  limparBuffer();
+  getchar();
+}
+
+int contarElementos(Celula **lista) {
+  if (listaVazia(lista)) {
+    return 0;
+  }
+
+  Celula *aux = (*lista);
+  int contador = 0;
+  
+  while (aux != NULL) {
+    contador++;
+    aux = aux->prox;
+  }
+  
+  return contador;
+}
+
+void exibirCabecalho(Celula **lista) {
+  int total = contarElementos(lista);
+  char status[20];
+  
+  if (listaVazia(lista)) {
+    strcpy(status, "VAZIA");
+  } else {
+    strcpy(status, "ORDENADA");
+  }
+  
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║      LISTA ENCADEADA ORDENADA        ║\n");
+  printf("║         Sistema de Jogadores         ║\n");
+  printf("╠══════════════════════════════════════╣\n");
+  printf("║ Status: %-8s | Jogadores: %d      ║\n", status, total);
+  printf("╚══════════════════════════════════════╝\n\n");
 }
 
 Celula * criarCelula() {
@@ -190,10 +250,258 @@ Jogador removerElemento(Celula **lista, Jogador elemento) {
   return removido;
 }
 
+// FUNÇÕES UTILIZADAS PELO MENU
+void exibirMenu(Celula **lista, int *opcao)
+{
+  limparTela();
+  exibirCabecalho(lista);
+  
+  printf("┌──────────────────────────────────────┐\n");
+  printf("│                MENU                  │\n");
+  printf("├──────────────────────────────────────┤\n");
+  printf("│  1 - Exibir elementos                │\n");
+  printf("│  2 - Inserir elemento (ordenado)     │\n");
+  printf("│  3 - Remover do inicio               │\n");
+  printf("│  4 - Remover do fim                  │\n");
+  printf("│  5 - Pesquisar elemento              │\n");
+  printf("│  6 - Remover elemento especifico     │\n");
+  printf("│  0 - Sair                            │\n");
+  printf("└──────────────────────────────────────┘\n\n");
+  printf("Escolha uma opcao: ");
+  scanf("%d", opcao);
+}
+
+void menuExibirElementos(Celula **lista) {
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║    LISTA DE JOGADORES (ORDENADA)     ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+  
+  if (listaVazia(lista)) {
+    printf("Lista vazia! Nenhum jogador cadastrado.\n");
+  } else {
+    printf("┌─────────────┬────────────────────────┐\n");
+    printf("│ Num. Camisa │         Nome           │\n");
+    printf("├─────────────┼────────────────────────┤\n");
+    
+    Celula *aux = (*lista);
+    while (aux != NULL) {
+      printf("│ %11d │ %-22s │\n", aux->info.numCamisa, aux->info.nome);
+      aux = aux->prox;
+    }
+    printf("└─────────────┴────────────────────────┘\n");
+    printf("\nTotal de jogadores: %d (ordenados por nome)\n", contarElementos(lista));
+  }
+  
+  pausar();
+}
+
+void menuInserir(Celula **lista)
+{
+  int sucesso;
+  Jogador novoJogador;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║     INSERIR ELEMENTO (ORDENADO)      ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  printf("Digite o numero da camisa: ");
+  scanf("%d", &novoJogador.numCamisa);
+
+  limparBuffer();
+
+  printf("Digite o nome do jogador: ");
+  fgets(novoJogador.nome, 50, stdin);
+
+  removerQuebraLinha(novoJogador.nome);
+
+  sucesso = inserir(lista, novoJogador);
+
+  printf("\n");
+  if (sucesso)
+    printf("Jogador inserido com sucesso na posicao ordenada!\n");
+  else
+    printf("Erro ao inserir jogador!\n");
+    
+  pausar();
+}
+
+void menuRemoverInicio(Celula **lista) {
+  Jogador removido;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║        REMOVER DO INICIO             ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  if (listaVazia(lista)) {
+    printf("Lista vazia! Nada para remover.\n");
+    pausar();
+    return;
+  }
+
+  removido = removerInicio(lista);
+
+  printf("\n");
+  if (removido.numCamisa != -1)
+    printf("Jogador removido: %d - %s\n", removido.numCamisa, removido.nome);
+  else
+    printf("Erro ao remover jogador!\n");
+    
+  pausar();
+}
+
+void menuRemoverFim(Celula **lista) {
+  Jogador removido;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║         REMOVER DO FIM               ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  if (listaVazia(lista)) {
+    printf("Lista vazia! Nada para remover.\n");
+    pausar();
+    return;
+  }
+
+  removido = removerFim(lista);
+
+  printf("\n");
+  if (removido.numCamisa != -1)
+    printf("Jogador removido: %d - %s\n", removido.numCamisa, removido.nome);
+  else
+    printf("Erro ao remover jogador!\n");
+    
+  pausar();
+}
+
+void menuPesquisarElemento(Celula **lista) {
+  char nome[50];
+  Jogador pesquisado;
+  Celula *encontrado;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║        PESQUISAR ELEMENTO            ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  if (listaVazia(lista)) {
+    printf("Lista vazia! Nada para pesquisar.\n");
+    pausar();
+    return;
+  }
+
+  limparBuffer();
+  printf("Digite o nome para pesquisar: ");
+  fgets(nome, 50, stdin);
+  removerQuebraLinha(nome);
+
+  pesquisado = criarElemento(0, nome);
+  encontrado = pesquisar(lista, pesquisado);
+
+  printf("\n");
+  if (encontrado != NULL) {
+    printf("Elemento encontrado!\n");
+    printf("┌─────────────┬────────────────────────┐\n");
+    printf("│ Num. Camisa │ %-22d │\n", encontrado->info.numCamisa);
+    printf("│ Nome        │ %-22s │\n", encontrado->info.nome);
+    printf("└─────────────┴────────────────────────┘\n");
+  } else {
+    printf("Elemento nao encontrado!\n");
+  }
+  
+  pausar();
+}
+
+void menuRemoverElemento(Celula **lista) {
+  char nome[50];
+  Jogador pesquisado, removido;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║      REMOVER ELEMENTO ESPECIFICO     ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  if (listaVazia(lista)) {
+    printf("Lista vazia! Nada para remover.\n");
+    pausar();
+    return;
+  }
+
+  limparBuffer();
+  printf("Digite o nome do jogador a remover: ");
+  fgets(nome, 50, stdin);
+  removerQuebraLinha(nome);
+
+  pesquisado = criarElemento(0, nome);
+  removido = removerElemento(lista, pesquisado);
+
+  printf("\n");
+  if (removido.numCamisa != -1)
+    printf("Jogador removido: %d - %s\n", removido.numCamisa, removido.nome);
+  else
+    printf("Jogador nao encontrado!\n");
+    
+  pausar();
+}
+
 int main() {
   Celula *lista;
+  int opcao;
 
-  //
+  inicializarLista(&lista);
+
+  do
+  {
+    exibirMenu(&lista, &opcao);
+
+    switch (opcao)
+    {
+    case 1:
+      menuExibirElementos(&lista);
+      break;
+
+    case 2:
+      menuInserir(&lista);
+      break;
+
+    case 3:
+      menuRemoverInicio(&lista);
+      break;
+
+    case 4:
+      menuRemoverFim(&lista);
+      break;
+
+    case 5:
+      menuPesquisarElemento(&lista);
+      break;
+      
+    case 6:
+      menuRemoverElemento(&lista);
+      break;
+      
+    case 0:
+      limparTela();
+      printf("╔══════════════════════════════════════╗\n");
+      printf("║         ATE A PROXIMA!               ║\n");
+      printf("║                                      ║\n");
+      printf("║    Obrigado por usar o sistema!      ║\n");
+      printf("╚══════════════════════════════════════╝\n\n");
+      break;
+
+    default:
+      limparTela();
+      printf("╔══════════════════════════════════════╗\n");
+      printf("║          OPCAO INVALIDA!             ║\n");
+      printf("╚══════════════════════════════════════╝\n\n");
+      printf("Por favor, escolha uma opcao valida (0-6).\n");
+      pausar();
+      break;
+    }
+  } while (opcao != 0);
 
   return 0;
 }
