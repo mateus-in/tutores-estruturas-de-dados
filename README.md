@@ -47,6 +47,22 @@ Variação da lista encadeada que mantém elementos automaticamente ordenados.
 
 **Arquivo:** `listas/encadeada-ordenada/main.c`
 
+---
+
+### 4. Lista Duplamente Encadeada
+Uma estrutura dinâmica onde cada elemento possui ponteiros para o próximo e para o anterior.
+
+**Características:**
+- Navegação bidirecional (frente e trás)
+- Dois ponteiros por nó (ante e prox)
+- Operações simétricas de inserção/remoção
+- Remoção mais eficiente (não precisa buscar anterior)
+- Sistema de gerenciamento de jogadores
+
+**Documentação:** [Lista Duplamente Encadeada](listas/duplamente-encadeada/README.md)
+
+**Arquivo:** `listas/duplamente-encadeada/main.c`
+
 ## Funcionalidades Comuns
 
 Todas as implementações incluem:
@@ -96,6 +112,11 @@ gcc -o programa main.c
 cd listas/encadeada-ordenada
 gcc -o programa main.c
 ./programa
+
+# Lista Duplamente Encadeada
+cd listas/duplamente-encadeada
+gcc -o programa main.c
+./programa
 ```
 
 ### Compilação com Make (Opcional)
@@ -104,6 +125,7 @@ gcc -o programa main.c
 make lista-estatica
 make lista-encadeada
 make lista-ordenada
+make lista-duplamente
 ```
 
 ## Estrutura do Projeto
@@ -118,8 +140,11 @@ tutores-estruturas-de-dados/
 │   ├── encadeada/
 │   │   ├── main.c               # Implementação da lista encadeada
 │   │   └── README.md            # Documentação detalhada
-│   └── encadeada-ordenada/
-│       ├── main.c               # Implementação da lista ordenada
+│   ├── encadeada-ordenada/
+│   │   ├── main.c               # Implementação da lista ordenada
+│   │   └── README.md            # Documentação detalhada
+│   └── duplamente-encadeada/
+│       ├── main.c               # Implementação da lista duplamente encadeada
 │       └── README.md            # Documentação detalhada
 ```
 
@@ -139,6 +164,11 @@ tutores-estruturas-de-dados/
 - **Elemento:** Jogador (número da camisa + nome)
 - **Ordenação:** Alfabética por nome
 - **Operações:** Inserir ordenado, remover início/fim, pesquisar, remover específico
+
+### Lista Duplamente Encadeada
+- **Elemento:** Jogador (número da camisa + nome)
+- **Navegação:** Bidirecional (ante + prox)
+- **Operações:** Inserir início/fim, remover início/fim, pesquisar, remover específico
 
 ## Conceitos Abordados
 
@@ -172,14 +202,17 @@ Este projeto foi desenvolvido para:
 
 ## Comparação entre Estruturas
 
-| Aspecto | Lista Estática | Lista Encadeada | Lista Ordenada |
-|---------|---------------|-----------------|----------------|
-| **Tamanho** | Fixo | Dinâmico | Dinâmico |
-| **Memória** | Contígua | Fragmentada | Fragmentada |
-| **Inserção** | O(n) | O(1)/O(n) | O(n) |
-| **Busca** | O(n) | O(n) | O(n)* |
-| **Ordenação** | Manual | Manual | Automática |
-| **Complexidade** | Baixa | Média | Alta |
+| Aspecto | Lista Estática | Lista Encadeada | Lista Ordenada | Lista Duplamente Encadeada |
+|---------|---------------|-----------------|----------------|----------------------------|
+| **Tamanho** | Fixo | Dinâmico | Dinâmico | Dinâmico |
+| **Memória** | Contígua | Fragmentada | Fragmentada | Fragmentada |
+| **Navegação** | Índice | Unidirecional | Unidirecional | Bidirecional |
+| **Inserção** | O(n) | O(1)/O(n) | O(n) | O(1)/O(n) |
+| **Remoção** | O(n) | O(1)/O(n) | O(1)/O(n) | O(1)/O(n) |
+| **Busca** | O(n) | O(n) | O(n)* | O(n) |
+| **Ordenação** | Manual | Manual | Automática | Manual |
+| **Complexidade** | Baixa | Média | Alta | Alta |
+| **Ponteiros/Nó** | 0 | 1 | 1 | 2 |
 
 *Pode terminar antes devido à ordenação
 
