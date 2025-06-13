@@ -14,13 +14,6 @@ typedef struct NoFila
   struct NoFila *proximo;
 } NoFila;
 
-typedef struct
-{
-  NoFila *inicio;
-  NoFila *fim;
-  int tamanho;
-} FilaDinamica;
-
 void limparBuffer()
 {
   int c;
@@ -33,16 +26,14 @@ void removerQuebraLinha(char *str) {
 }
 
 // FUNÇÕES DA FILA DINÂMICA
-void inicializarFila(FilaDinamica *fila)
+void inicializarFila(NoFila **fila)
 {
-  fila->inicio = NULL;
-  fila->fim = NULL;
-  fila->tamanho = 0;
+  *fila = NULL;
 }
 
-int filaVazia(FilaDinamica *fila)
+int filaVazia(NoFila **fila)
 {
-  return fila->inicio == NULL;
+  return *fila == NULL;
 }
 
 // FUNÇÕES AUXILIARES PARA INTERFACE
@@ -60,8 +51,24 @@ void pausar() {
   getchar();
 }
 
-void exibirCabecalho(FilaDinamica *fila) {
-  int total = fila->tamanho;
+int contarElementos(NoFila **fila) {
+  if (filaVazia(fila)) {
+    return 0;
+  }
+
+  NoFila *aux = *fila;
+  int contador = 0;
+  
+  while (aux != NULL) {
+    contador++;
+    aux = aux->proximo;
+  }
+  
+  return contador;
+}
+
+void exibirCabecalho(NoFila **fila) {
+  int total = contarElementos(fila);
   char status[20];
   
   if (filaVazia(fila)) {
@@ -78,7 +85,20 @@ void exibirCabecalho(FilaDinamica *fila) {
   printf("╚══════════════════════════════════════╝\n\n");
 }
 
-int enqueue(FilaDinamica *fila, Ticket elemento)
+NoFila* encontrarUltimo(NoFila **fila) {
+  if (filaVazia(fila)) {
+    return NULL;
+  }
+  
+  NoFila *aux = *fila;
+  while (aux->proximo != NULL) {
+    aux = aux->proximo;
+  }
+  
+  return aux;
+}
+
+int enqueue(NoFila **fila, Ticket elemento)
 {
   NoFila *novoNo = (NoFila *)malloc(sizeof(NoFila));
   
@@ -89,50 +109,42 @@ int enqueue(FilaDinamica *fila, Ticket elemento)
   novoNo->proximo = NULL;
 
   if (filaVazia(fila)) {
-    fila->inicio = novoNo;
-    fila->fim = novoNo;
+    *fila = novoNo;
   } else {
-    fila->fim->proximo = novoNo;
-    fila->fim = novoNo;
+    NoFila *ultimo = encontrarUltimo(fila);
+    ultimo->proximo = novoNo;
   }
 
-  fila->tamanho++;
   return 1;
 }
 
-Ticket dequeue(FilaDinamica *fila)
+Ticket dequeue(NoFila **fila)
 {
   Ticket vazio = {-1, ""};
   
   if (filaVazia(fila))
     return vazio;
 
-  NoFila *noRemover = fila->inicio;
+  NoFila *noRemover = *fila;
   Ticket dadosRemovidos = noRemover->dados;
 
-  fila->inicio = fila->inicio->proximo;
-  
-  if (fila->inicio == NULL) {
-    fila->fim = NULL; // Fila ficou vazia
-  }
-
+  *fila = (*fila)->proximo;
   free(noRemover);
-  fila->tamanho--;
 
   return dadosRemovidos;
 }
 
-Ticket consultarProximo(FilaDinamica *fila)
+Ticket consultarProximo(NoFila **fila)
 {
   Ticket vazio = {-1, ""};
   
   if (filaVazia(fila))
     return vazio;
 
-  return fila->inicio->dados;
+  return (*fila)->dados;
 }
 
-void liberarFila(FilaDinamica *fila)
+void liberarFila(NoFila **fila)
 {
   while (!filaVazia(fila)) {
     dequeue(fila);
@@ -140,7 +152,7 @@ void liberarFila(FilaDinamica *fila)
 }
 
 // FUNÇÕES UTILIZADAS PELO MENU
-void exibirMenu(FilaDinamica *fila, int *opcao)
+void exibirMenu(NoFila **fila, int *opcao)
 {
   limparTela();
   exibirCabecalho(fila);
@@ -160,7 +172,7 @@ void exibirMenu(FilaDinamica *fila, int *opcao)
   scanf("%d", opcao);
 }
 
-void menuExibirFila(FilaDinamica *fila) {
+void menuExibirFila(NoFila **fila) {
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
   printf("║          FILA DE TICKETS             ║\n");
@@ -173,7 +185,7 @@ void menuExibirFila(FilaDinamica *fila) {
     printf("│ Posicao │ Prioridade │       Tarefa          │\n");
     printf("├─────────┼────────────┼───────────────────────┤\n");
     
-    NoFila *atual = fila->inicio;
+    NoFila *atual = *fila;
     int posicao = 1;
     
     while (atual != NULL) {
@@ -184,108 +196,109 @@ void menuExibirFila(FilaDinamica *fila) {
       posicao++;
     }
     printf("└─────────┴────────────┴───────────────────────┘\n");
-    printf("\nTotal na fila: %d tickets\n", fila->tamanho);
+    printf("\nTotal na fila: %d tickets\n", contarElementos(fila));
     printf("Proximo a ser atendido: Prioridade %d - %s\n", 
-           fila->inicio->dados.prioridade,
-           fila->inicio->dados.tarefa);
+           (*fila)->dados.prioridade,
+           (*fila)->dados.tarefa);
   }
   
   pausar();
 }
 
-void menuEnqueue(FilaDinamica *fila)
+void menuEnqueue(NoFila **fila)
 {
   int sucesso;
   Ticket novoTicket;
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
-  printf("║        ENQUEUE (INSERIR)             ║\n");
+  printf("║         INSERIR TICKET               ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
-  printf("Digite a prioridade do ticket (1-10): ");
+  printf("Digite a prioridade do ticket: ");
   scanf("%d", &novoTicket.prioridade);
-
   limparBuffer();
 
   printf("Digite a descricao da tarefa: ");
-  fgets(novoTicket.tarefa, 100, stdin);
-
+  fgets(novoTicket.tarefa, sizeof(novoTicket.tarefa), stdin);
   removerQuebraLinha(novoTicket.tarefa);
 
   sucesso = enqueue(fila, novoTicket);
 
-  printf("\n");
-  if (sucesso)
-    printf("Ticket inserido na fila com sucesso!\n");
-  else
-    printf("Erro ao inserir ticket na fila! (Memoria insuficiente)\n");
-    
+  if (sucesso) {
+    printf("\n✅ Ticket inserido com sucesso!\n");
+    printf("   Prioridade: %d\n", novoTicket.prioridade);
+    printf("   Tarefa: %s\n", novoTicket.tarefa);
+  } else {
+    printf("\n❌ Erro ao inserir ticket! Memoria insuficiente.\n");
+  }
+
   pausar();
 }
 
-void menuDequeue(FilaDinamica *fila) {
+void menuDequeue(NoFila **fila) {
   Ticket removido;
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
-  printf("║        DEQUEUE (REMOVER)             ║\n");
+  printf("║         REMOVER TICKET               ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
   if (filaVazia(fila)) {
-    printf("Fila vazia! Nada para remover.\n");
-    pausar();
-    return;
-  }
-
-  printf("Ticket a ser removido:\n");
-  printf("Prioridade: %d - %s\n\n", fila->inicio->dados.prioridade, 
-                                    fila->inicio->dados.tarefa);
-
-  removido = dequeue(fila);
-
-  printf("Ticket removido da fila: Prioridade %d - %s\n", 
-         removido.prioridade, removido.tarefa);
-  
-  if (!filaVazia(fila)) {
-    printf("Proximo da fila: Prioridade %d - %s\n", 
-           fila->inicio->dados.prioridade,
-           fila->inicio->dados.tarefa);
+    printf("❌ Fila vazia! Nenhum ticket para remover.\n");
   } else {
-    printf("Fila agora esta vazia.\n");
+    printf("Ticket a ser removido:\n");
+    printf("┌────────────┬───────────────────────┐\n");
+    printf("│ Prioridade │       Tarefa          │\n");
+    printf("├────────────┼───────────────────────┤\n");
+    printf("│ %10d │ %-21s │\n", 
+           (*fila)->dados.prioridade,
+           (*fila)->dados.tarefa);
+    printf("└────────────┴───────────────────────┘\n\n");
+
+    removido = dequeue(fila);
+
+    if (removido.prioridade != -1) {
+      printf("✅ Ticket removido com sucesso!\n");
+      printf("   Prioridade: %d\n", removido.prioridade);
+      printf("   Tarefa: %s\n", removido.tarefa);
+    }
   }
-    
+
   pausar();
 }
 
-void menuConsultarProximo(FilaDinamica *fila) {
+void menuConsultarProximo(NoFila **fila) {
   Ticket proximo;
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
-  printf("║        CONSULTAR PROXIMO             ║\n");
+  printf("║       CONSULTAR PROXIMO              ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
   if (filaVazia(fila)) {
-    printf("Fila vazia! Nenhum ticket para consultar.\n");
-    pausar();
-    return;
+    printf("❌ Fila vazia! Nenhum ticket na fila.\n");
+  } else {
+    proximo = consultarProximo(fila);
+    
+    printf("Proximo ticket a ser atendido:\n");
+    printf("┌────────────┬───────────────────────┐\n");
+    printf("│ Prioridade │       Tarefa          │\n");
+    printf("├────────────┼───────────────────────┤\n");
+    printf("│ %10d │ %-21s │\n", 
+           proximo.prioridade,
+           proximo.tarefa);
+    printf("└────────────┴───────────────────────┘\n");
+    
+    printf("\n📋 Este ticket sera o proximo a ser processado.\n");
   }
 
-  proximo = consultarProximo(fila);
-
-  printf("Proximo ticket a ser atendido:\n");
-  printf("┌─────────────┬──────────────────────────┐\n");
-  printf("│  Prioridade │ %-24d │\n", proximo.prioridade);
-  printf("│  Tarefa     │ %-24s │\n", proximo.tarefa);
-  printf("│  Posicao    │ Primeiro da fila         │\n");
-  printf("└─────────────┴──────────────────────────┘\n");
-  
   pausar();
 }
 
-void menuLimparFila(FilaDinamica *fila) {
-  char confirmacao;
+void menuLimparFila(NoFila **fila) {
+  int confirmacao;
+  int totalAntes = contarElementos(fila);
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
@@ -293,132 +306,118 @@ void menuLimparFila(FilaDinamica *fila) {
   printf("╚══════════════════════════════════════╝\n\n");
 
   if (filaVazia(fila)) {
-    printf("Fila ja esta vazia!\n");
-    pausar();
-    return;
-  }
-
-  printf("ATENCAO: Esta operacao ira remover TODOS os tickets da fila!\n");
-  printf("Tickets na fila: %d\n\n", fila->tamanho);
-  
-  printf("Tem certeza? (s/N): ");
-  limparBuffer();
-  scanf("%c", &confirmacao);
-
-  if (confirmacao == 's' || confirmacao == 'S') {
-    liberarFila(fila);
-    printf("\nFila limpa com sucesso! Todos os tickets foram removidos.\n");
+    printf("❌ A fila ja esta vazia!\n");
   } else {
-    printf("\nOperacao cancelada. Fila mantida inalterada.\n");
+    printf("⚠️  ATENÇÃO: Esta operacao ira remover TODOS os %d tickets da fila!\n", totalAntes);
+    printf("   Esta acao nao pode ser desfeita.\n\n");
+    printf("Deseja realmente limpar a fila? (1-Sim / 0-Nao): ");
+    scanf("%d", &confirmacao);
+
+    if (confirmacao == 1) {
+      liberarFila(fila);
+      printf("\n✅ Fila limpa com sucesso!\n");
+      printf("   %d tickets foram removidos.\n", totalAntes);
+    } else {
+      printf("\n❌ Operacao cancelada. Fila mantida.\n");
+    }
   }
-    
+
   pausar();
 }
 
-void menuEstatisticas(FilaDinamica *fila) {
+void menuEstatisticas(NoFila **fila) {
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
   printf("║         ESTATISTICAS                 ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
+  int total = contarElementos(fila);
+  
   if (filaVazia(fila)) {
-    printf("Fila vazia! Nenhuma estatistica disponivel.\n");
-    pausar();
-    return;
+    printf("📊 ESTATISTICAS DA FILA:\n");
+    printf("┌─────────────────────────┬─────────┐\n");
+    printf("│ Total de tickets        │   %5d │\n", total);
+    printf("│ Status                  │   VAZIA │\n");
+    printf("│ Memoria utilizada       │   0 KB  │\n");
+    printf("└─────────────────────────┴─────────┘\n");
+  } else {
+    // Calcular estatísticas de prioridade
+    int prioridadeMin = (*fila)->dados.prioridade;
+    int prioridadeMax = (*fila)->dados.prioridade;
+    int somaPrioridades = 0;
+    
+    NoFila *atual = *fila;
+    while (atual != NULL) {
+      if (atual->dados.prioridade < prioridadeMin) {
+        prioridadeMin = atual->dados.prioridade;
+      }
+      if (atual->dados.prioridade > prioridadeMax) {
+        prioridadeMax = atual->dados.prioridade;
+      }
+      somaPrioridades += atual->dados.prioridade;
+      atual = atual->proximo;
+    }
+    
+    float mediaPrioridade = (float)somaPrioridades / total;
+    int memoriaKB = (total * sizeof(NoFila)) / 1024;
+    if (memoriaKB == 0) memoriaKB = 1; // Mínimo 1KB
+    
+    printf("📊 ESTATISTICAS DA FILA:\n");
+    printf("┌─────────────────────────┬─────────┐\n");
+    printf("│ Total de tickets        │   %5d │\n", total);
+    printf("│ Status                  │   ATIVA │\n");
+    printf("│ Prioridade minima       │   %5d │\n", prioridadeMin);
+    printf("│ Prioridade maxima       │   %5d │\n", prioridadeMax);
+    printf("│ Prioridade media        │   %5.1f │\n", mediaPrioridade);
+    printf("│ Memoria utilizada       │ %4d KB │\n", memoriaKB);
+    printf("└─────────────────────────┴─────────┘\n");
+    
+    printf("\n🎯 PROXIMO TICKET:\n");
+    printf("   Prioridade: %d\n", (*fila)->dados.prioridade);
+    printf("   Tarefa: %s\n", (*fila)->dados.tarefa);
   }
 
-  // Calcular estatísticas
-  int totalTickets = fila->tamanho;
-  int somaprioridades = 0;
-  int prioridadeMax = fila->inicio->dados.prioridade;
-  int prioridadeMin = fila->inicio->dados.prioridade;
-  
-  NoFila *atual = fila->inicio;
-  while (atual != NULL) {
-    somaprioridades += atual->dados.prioridade;
-    if (atual->dados.prioridade > prioridadeMax) {
-      prioridadeMax = atual->dados.prioridade;
-    }
-    if (atual->dados.prioridade < prioridadeMin) {
-      prioridadeMin = atual->dados.prioridade;
-    }
-    atual = atual->proximo;
-  }
-  
-  float mediaPrioridade = (float)somaprioridades / totalTickets;
-  
-  printf("┌─────────────────────┬─────────────┐\n");
-  printf("│ Total de Tickets    │ %11d │\n", totalTickets);
-  printf("│ Prioridade Media    │ %11.1f │\n", mediaPrioridade);
-  printf("│ Prioridade Maxima   │ %11d │\n", prioridadeMax);
-  printf("│ Prioridade Minima   │ %11d │\n", prioridadeMin);
-  printf("│ Memoria Utilizada   │ %8d KB │\n", totalTickets * (int)sizeof(NoFila) / 1024 + 1);
-  printf("└─────────────────────┴─────────────┘\n");
-  
-  printf("\nDetalhes da estrutura:\n");
-  printf("- Cada no ocupa %zu bytes\n", sizeof(NoFila));
-  printf("- Memoria total estimada: %zu bytes\n", totalTickets * sizeof(NoFila));
-  printf("- Fila implementada como lista encadeada\n");
-  printf("- Crescimento dinamico de memoria\n");
-  
   pausar();
 }
 
 int main()
 {
-  FilaDinamica fila;
+  NoFila *fila;
   int opcao;
 
   inicializarFila(&fila);
 
-  do
-  {
+  do {
     exibirMenu(&fila, &opcao);
 
-    switch (opcao)
-    {
-    case 1:
-      menuExibirFila(&fila);
-      break;
-
-    case 2:
-      menuEnqueue(&fila);
-      break;
-
-    case 3:
-      menuDequeue(&fila);
-      break;
-
-    case 4:
-      menuConsultarProximo(&fila);
-      break;
-
-    case 5:
-      menuLimparFila(&fila);
-      break;
-      
-    case 6:
-      menuEstatisticas(&fila);
-      break;
-      
-    case 0:
-      liberarFila(&fila); // Liberar memoria antes de sair
-      limparTela();
-      printf("╔══════════════════════════════════════╗\n");
-      printf("║         ATE A PROXIMA!               ║\n");
-      printf("║                                      ║\n");
-      printf("║    Obrigado por usar o sistema!      ║\n");
-      printf("╚══════════════════════════════════════╝\n\n");
-      break;
-
-    default:
-      limparTela();
-      printf("╔══════════════════════════════════════╗\n");
-      printf("║          OPCAO INVALIDA!             ║\n");
-      printf("╚══════════════════════════════════════╝\n\n");
-      printf("Por favor, escolha uma opcao valida (0-6).\n");
-      pausar();
-      break;
+    switch (opcao) {
+      case 1:
+        menuExibirFila(&fila);
+        break;
+      case 2:
+        menuEnqueue(&fila);
+        break;
+      case 3:
+        menuDequeue(&fila);
+        break;
+      case 4:
+        menuConsultarProximo(&fila);
+        break;
+      case 5:
+        menuLimparFila(&fila);
+        break;
+      case 6:
+        menuEstatisticas(&fila);
+        break;
+      case 0:
+        printf("\n👋 Encerrando o programa...\n");
+        liberarFila(&fila);
+        printf("✅ Memoria liberada com sucesso!\n");
+        break;
+      default:
+        printf("\n❌ Opcao invalida! Tente novamente.\n");
+        pausar();
+        break;
     }
   } while (opcao != 0);
 

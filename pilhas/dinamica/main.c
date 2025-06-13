@@ -22,12 +22,6 @@ typedef struct no {
     struct no *proximo;
 } No;
 
-// Estrutura que representa a pilha dinâmica
-typedef struct {
-    No *topo;
-    int tamanho;
-} PilhaDinamica;
-
 // ========== FUNÇÕES AUXILIARES ==========
 
 void limparBuffer() {
@@ -55,20 +49,32 @@ void pausar() {
 
 // ========== FUNÇÕES DA PILHA ==========
 
-void inicializarPilha(PilhaDinamica *pilha) {
-    pilha->topo = NULL;
-    pilha->tamanho = 0;
+void inicializarPilha(No **pilha) {
+    *pilha = NULL;
 }
 
-int pilhaVazia(PilhaDinamica *pilha) {
-    return (pilha->topo == NULL);
+int pilhaVazia(No **pilha) {
+    return (*pilha == NULL);
 }
 
-int tamanho(PilhaDinamica *pilha) {
-    return pilha->tamanho;
+int contarElementos(No **pilha) {
+    if (pilhaVazia(pilha)) {
+        return 0;
+    }
+
+    No *aux = *pilha;
+    int contador = 0;
+    
+    while (aux != NULL) {
+        contador++;
+        aux = aux->proximo;
+    }
+    
+    return contador;
 }
 
-void exibirCabecalho(PilhaDinamica *pilha) {
+void exibirCabecalho(No **pilha) {
+    int tamanho = contarElementos(pilha);
     char status[20];
     
     if (pilhaVazia(pilha)) {
@@ -81,7 +87,7 @@ void exibirCabecalho(PilhaDinamica *pilha) {
     printf("║           PILHA DINÂMICA             ║\n");
     printf("║          Sistema de Livros           ║\n");
     printf("╠══════════════════════════════════════╣\n");
-    printf("║ Status: %-10s | Livros: %-6d      ║\n", status, pilha->tamanho);
+    printf("║ Status: %-10s | Livros: %-6d      ║\n", status, tamanho);
     printf("╚══════════════════════════════════════╝\n\n");
 }
 
@@ -97,62 +103,62 @@ No* criarNo(Livro elemento) {
     return novo;
 }
 
-int push(PilhaDinamica *pilha, Livro elemento) {
+int push(No **pilha, Livro elemento) {
     No *novo = criarNo(elemento);
     if (novo == NULL) {
         return 0; // Falha na alocação
     }
     
-    novo->proximo = pilha->topo;
-    pilha->topo = novo;
-    pilha->tamanho++;
+    novo->proximo = *pilha;
+    *pilha = novo;
     
     return 1; // Sucesso
 }
 
-Livro pop(PilhaDinamica *pilha) {
+Livro pop(No **pilha) {
     Livro livroVazio = {-1, "", "", 0};
     
     if (pilhaVazia(pilha)) {
         return livroVazio; // Retorna livro inválido
     }
     
-    No *removido = pilha->topo;
+    No *removido = *pilha;
     Livro elemento = removido->info;
     
-    pilha->topo = pilha->topo->proximo;
+    *pilha = (*pilha)->proximo;
     free(removido);
-    pilha->tamanho--;
     
     return elemento;
 }
 
-Livro top(PilhaDinamica *pilha) {
+Livro top(No **pilha) {
     Livro livroVazio = {-1, "", "", 0};
     
     if (pilhaVazia(pilha)) {
         return livroVazio; // Retorna livro inválido
     }
     
-    return pilha->topo->info;
+    return (*pilha)->info;
 }
 
-void exibirPilha(PilhaDinamica *pilha) {
+void exibirPilha(No **pilha) {
     if (pilhaVazia(pilha)) {
         printf("A pilha está vazia!\n");
         return;
     }
+    
+    int tamanho = contarElementos(pilha);
     
     printf("PILHA DINÂMICA (Topo → Base):\n");
     printf("┌────────────────────────────────────────────────────────────────────┐\n");
     printf("│ Pos │ ISBN     │ Título                     │ Autor           │ Pág.│\n");
     printf("├─────┼──────────┼────────────────────────────┼─────────────────┼─────┤\n");
     
-    No *atual = pilha->topo;
-    int posicao = pilha->tamanho - 1;
+    No *atual = *pilha;
+    int posicao = tamanho - 1;
     
     while (atual != NULL) {
-        char simbolo = (atual == pilha->topo) ? '>' : '|';
+        char simbolo = (atual == *pilha) ? '>' : '|';
         printf("│ %c%2d │ %-8d │ %-26s │ %-15s │ %3d │\n", 
                simbolo,
                posicao,
@@ -166,10 +172,10 @@ void exibirPilha(PilhaDinamica *pilha) {
     }
     
     printf("└────────────────────────────────────────────────────────────────────┘\n");
-    printf("💡 Topo da pilha: [%d] elementos empilhados\n", pilha->tamanho);
+    printf("💡 Topo da pilha: [%d] elementos empilhados\n", tamanho);
 }
 
-void liberarPilha(PilhaDinamica *pilha) {
+void liberarPilha(No **pilha) {
     while (!pilhaVazia(pilha)) {
         pop(pilha); // Pop já faz o free() interno
     }
@@ -178,7 +184,7 @@ void liberarPilha(PilhaDinamica *pilha) {
 
 // ========== FUNÇÕES DO MENU ==========
 
-void exibirMenu(PilhaDinamica *pilha, int *opcao) {
+void exibirMenu(No **pilha, int *opcao) {
     limparTela();
     exibirCabecalho(pilha);
     
@@ -200,7 +206,7 @@ void exibirMenu(PilhaDinamica *pilha, int *opcao) {
     limparBuffer();
 }
 
-void menuExibirPilha(PilhaDinamica *pilha) {
+void menuExibirPilha(No **pilha) {
     limparTela();
     exibirCabecalho(pilha);
     
@@ -209,52 +215,58 @@ void menuExibirPilha(PilhaDinamica *pilha) {
     
     if (!pilhaVazia(pilha)) {
         printf("\n📊 Informações da Pilha:\n");
-        printf("   • Total de livros: %d\n", pilha->tamanho);
-        printf("   • Memória utilizada: ~%lu bytes\n", pilha->tamanho * sizeof(No));
-        printf("   • Último livro empilhado: %s\n", pilha->topo->info.titulo);
+        printf("   • Total de livros: %d\n", contarElementos(pilha));
+        printf("   • Memória utilizada: ~%lu bytes\n", contarElementos(pilha) * sizeof(No));
+        printf("   • Último livro empilhado: %s\n", (*pilha)->info.titulo);
     }
     
     pausar();
 }
 
-void menuPush(PilhaDinamica *pilha) {
+void menuPush(No **pilha) {
+    Livro novoLivro;
+    int sucesso;
+    
     limparTela();
     exibirCabecalho(pilha);
     
     printf("═══════════════ EMPILHAR LIVRO ═══════════════\n\n");
     
-    Livro livro;
-    
     printf("📚 Digite os dados do livro:\n\n");
     
     printf("ISBN: ");
-    scanf("%d", &livro.isbn);
+    scanf("%d", &novoLivro.isbn);
     limparBuffer();
     
     printf("Título: ");
-    fgets(livro.titulo, sizeof(livro.titulo), stdin);
-    removerQuebraLinha(livro.titulo);
+    fgets(novoLivro.titulo, sizeof(novoLivro.titulo), stdin);
+    removerQuebraLinha(novoLivro.titulo);
     
     printf("Autor: ");
-    fgets(livro.autor, sizeof(livro.autor), stdin);
-    removerQuebraLinha(livro.autor);
+    fgets(novoLivro.autor, sizeof(novoLivro.autor), stdin);
+    removerQuebraLinha(novoLivro.autor);
     
     printf("Páginas: ");
-    scanf("%d", &livro.paginas);
+    scanf("%d", &novoLivro.paginas);
     limparBuffer();
     
-    if (push(pilha, livro)) {
-        printf("\n✅ Livro empilhado com sucesso!\n");
-        printf("📊 Livros na pilha: %d\n", tamanho(pilha));
-        printf("📚 Novo topo: %s\n", livro.titulo);
+    sucesso = push(pilha, novoLivro);
+    
+    printf("\n");
+    if (sucesso) {
+        printf("✅ Livro empilhado com sucesso!\n");
+        printf("   📖 %s - %s\n", novoLivro.titulo, novoLivro.autor);
+        printf("   📊 Total na pilha: %d livros\n", contarElementos(pilha));
     } else {
-        printf("\n❌ Erro ao empilhar livro! (Memória insuficiente)\n");
+        printf("❌ Erro ao empilhar livro! Memória insuficiente.\n");
     }
     
     pausar();
 }
 
-void menuPop(PilhaDinamica *pilha) {
+void menuPop(No **pilha) {
+    Livro removido;
+    
     limparTela();
     exibirCabecalho(pilha);
     
@@ -268,35 +280,28 @@ void menuPop(PilhaDinamica *pilha) {
     }
     
     printf("📚 Livro no topo da pilha:\n");
-    Livro topo = top(pilha);
-    printf("   ISBN: %d\n", topo.isbn);
-    printf("   Título: %s\n", topo.titulo);
-    printf("   Autor: %s\n", topo.autor);
-    printf("   Páginas: %d\n\n", topo.paginas);
+    removido = pop(pilha);
     
-    printf("❓ Deseja realmente desempilhar este livro? (s/n): ");
-    char resposta;
-    scanf("%c", &resposta);
-    limparBuffer();
-    
-    if (resposta == 's' || resposta == 'S') {
-        Livro removido = pop(pilha);
-        if (removido.isbn != -1) {
-            printf("\n✅ Livro desempilhado com sucesso!\n");
-            printf("📚 Livro removido: %s\n", removido.titulo);
-            printf("📊 Livros restantes: %d\n", tamanho(pilha));
-            printf("💾 Memória liberada: ~%lu bytes\n", sizeof(No));
+    if (removido.isbn != -1) {
+        printf("\n✅ Livro desempilhado com sucesso!\n");
+        printf("   📖 %s - %s\n", removido.titulo, removido.autor);
+        printf("   📊 Restam na pilha: %d livros\n", contarElementos(pilha));
+        
+        if (!pilhaVazia(pilha)) {
+            printf("\n🔝 Novo topo: %s\n", (*pilha)->info.titulo);
         } else {
-            printf("\n❌ Erro ao desempilhar livro!\n");
+            printf("\n📭 Pilha agora está vazia!\n");
         }
     } else {
-        printf("\n↩️ Operação cancelada.\n");
+        printf("\n❌ Erro ao desempilhar livro!\n");
     }
     
     pausar();
 }
 
-void menuConsultarTopo(PilhaDinamica *pilha) {
+void menuConsultarTopo(No **pilha) {
+    Livro topo;
+    
     limparTela();
     exibirCabecalho(pilha);
     
@@ -309,7 +314,7 @@ void menuConsultarTopo(PilhaDinamica *pilha) {
         return;
     }
     
-    Livro topo = top(pilha);
+    topo = top(pilha);
     
     printf("🔝 LIVRO NO TOPO DA PILHA:\n");
     printf("┌─────────────────────────────────────────────────────────────────┐\n");
@@ -320,14 +325,14 @@ void menuConsultarTopo(PilhaDinamica *pilha) {
     printf("└─────────────────────────────────────────────────────────────────┘\n");
     
     printf("\n📊 Informações da Pilha:\n");
-    printf("   • Total de livros: %d\n", pilha->tamanho);
-    printf("   • Endereço do topo: %p\n", (void*)pilha->topo);
-    printf("   • Próximo elemento: %p\n", (void*)pilha->topo->proximo);
+    printf("   • Total de livros: %d\n", contarElementos(pilha));
+    printf("   • Endereço do topo: %p\n", (void*)(*pilha));
+    printf("   • Próximo elemento: %p\n", (void*)(*pilha)->proximo);
     
     pausar();
 }
 
-void menuVerificarVazia(PilhaDinamica *pilha) {
+void menuVerificarVazia(No **pilha) {
     limparTela();
     exibirCabecalho(pilha);
     
@@ -341,61 +346,71 @@ void menuVerificarVazia(PilhaDinamica *pilha) {
         printf("💡 Dica: Use a opção 2 para empilhar livros.\n");
     } else {
         printf("❌ A pilha NÃO está vazia!\n");
-        printf("📊 Livros na pilha: %d\n", tamanho(pilha));
-        printf("💾 Memória utilizada: ~%lu bytes\n", pilha->tamanho * sizeof(No));
-        printf("🎯 Ponteiro do topo: %p\n", (void*)pilha->topo);
-        printf("📚 Livro no topo: %s\n", pilha->topo->info.titulo);
+        printf("📊 Livros na pilha: %d\n", contarElementos(pilha));
+        printf("💾 Memória utilizada: ~%lu bytes\n", contarElementos(pilha) * sizeof(No));
+        printf("🎯 Ponteiro do topo: %p\n", (void*)(*pilha));
+        printf("📚 Livro no topo: %s\n", (*pilha)->info.titulo);
         printf("💡 Dica: Use a opção 3 para desempilhar livros.\n");
     }
     
     pausar();
 }
 
-void menuConsultarTamanho(PilhaDinamica *pilha) {
+void menuConsultarTamanho(No **pilha) {
+    int tamanho = contarElementos(pilha);
+    
     limparTela();
     exibirCabecalho(pilha);
     
     printf("═══════════════ CONSULTAR TAMANHO ═══════════════\n\n");
     
-    int total = tamanho(pilha);
-    size_t memoriaUsada = total * sizeof(No);
-    size_t memoriaTotal = memoriaUsada + sizeof(PilhaDinamica);
+    printf("📊 INFORMAÇÕES DA PILHA:\n");
+    printf("┌─────────────────────────┬─────────┐\n");
+    printf("│ Total de livros         │   %5d │\n", tamanho);
     
-    printf("📊 ESTATÍSTICAS DA PILHA DINÂMICA:\n");
-    printf("┌─────────────────────────────────────────────────────────────────┐\n");
-    printf("│ Total de livros: %-10d                                      │\n", total);
-    printf("│ Memória por nó: %-10lu bytes                                │\n", sizeof(No));
-    printf("│ Memória dos nós: %-10lu bytes                               │\n", memoriaUsada);
-    printf("│ Memória da estrutura: %-10lu bytes                          │\n", sizeof(PilhaDinamica));
-    printf("│ Memória total: %-10lu bytes                                 │\n", memoriaTotal);
-    printf("│ Ponteiro do topo: %p                                     │\n", (void*)pilha->topo);
-    printf("└─────────────────────────────────────────────────────────────────┘\n");
+    if (tamanho == 0) {
+        printf("│ Status                  │   VAZIA │\n");
+        printf("│ Memória utilizada       │   0 KB  │\n");
+    } else {
+        printf("│ Status                  │   ATIVA │\n");
+        printf("│ Memória utilizada       │ %4d KB │\n", 
+               (tamanho * (int)sizeof(No)) / 1024 + 1);
+        printf("│ Livro no topo           │ %-7s │\n", (*pilha)->info.titulo);
+    }
     
-    if (total > 0) {
-        printf("\n📈 REPRESENTAÇÃO DA PILHA:\n");
-                 printf("Topo -> ");
-         
-         No *atual = pilha->topo;
-         int count = 0;
-         while (atual != NULL && count < 5) { // Mostra até 5 elementos
-             printf("[%d]", atual->info.isbn);
-             if (atual->proximo != NULL && count < 4) {
-                 printf(" -> ");
-             }
-             atual = atual->proximo;
-             count++;
-         }
-         
-         if (atual != NULL) {
-             printf(" -> ... (%d mais)", total - 5);
-         }
-         printf(" -> NULL\n");
+    printf("└─────────────────────────┴─────────┘\n");
+    
+    if (tamanho > 0) {
+        printf("\n📈 ESTATÍSTICAS:\n");
+        
+        // Calcular estatísticas
+        int totalPaginas = 0;
+        int isbnMin = (*pilha)->info.isbn;
+        int isbnMax = (*pilha)->info.isbn;
+        
+        No *atual = *pilha;
+        while (atual != NULL) {
+            totalPaginas += atual->info.paginas;
+            if (atual->info.isbn < isbnMin) isbnMin = atual->info.isbn;
+            if (atual->info.isbn > isbnMax) isbnMax = atual->info.isbn;
+            atual = atual->proximo;
+        }
+        
+        float mediaPaginas = (float)totalPaginas / tamanho;
+        
+        printf("   • Páginas totais: %d\n", totalPaginas);
+        printf("   • Média de páginas: %.1f\n", mediaPaginas);
+        printf("   • ISBN menor: %d\n", isbnMin);
+        printf("   • ISBN maior: %d\n", isbnMax);
     }
     
     pausar();
 }
 
-void menuLiberarPilha(PilhaDinamica *pilha) {
+void menuLiberarPilha(No **pilha) {
+    int confirmacao;
+    int totalAntes = contarElementos(pilha);
+    
     limparTela();
     exibirCabecalho(pilha);
     
@@ -407,19 +422,24 @@ void menuLiberarPilha(PilhaDinamica *pilha) {
         return;
     }
     
-    int totalAntes = tamanho(pilha);
-    size_t memoriaLiberada = totalAntes * sizeof(No);
+    printf("⚠️ ATENÇÃO: Esta operação irá remover TODOS os %d livros da pilha!\n", totalAntes);
+    printf("📊 Livros a serem removidos:\n");
     
-    printf("⚠️ ATENÇÃO: Esta operação irá remover TODOS os livros da pilha!\n");
-    printf("📊 Livros a serem removidos: %d\n", totalAntes);
-    printf("💾 Memória a ser liberada: ~%lu bytes\n", memoriaLiberada);
+    No *atual = *pilha;
+    int contador = 1;
+    while (atual != NULL && contador <= 3) { // Mostrar apenas os 3 primeiros
+        printf("   %d. %s - %s\n", contador, atual->info.titulo, atual->info.autor);
+        atual = atual->proximo;
+        contador++;
+    }
+    if (totalAntes > 3) {
+        printf("   ... e mais %d livros\n", totalAntes - 3);
+    }
     
-    printf("\n❓ Deseja realmente liberar toda a pilha? (s/n): ");
-    char resposta;
-    scanf("%c", &resposta);
-    limparBuffer();
+    printf("\nDeseja realmente liberar toda a pilha? (1-Sim / 0-Não): ");
+    scanf("%d", &confirmacao);
     
-    if (resposta == 's' || resposta == 'S') {
+    if (confirmacao == 1) {
         printf("\n🔄 Liberando memória");
         
         // Animação visual
@@ -437,7 +457,7 @@ void menuLiberarPilha(PilhaDinamica *pilha) {
         
         printf("\n✅ Pilha liberada com sucesso!\n");
         printf("📊 Livros removidos: %d\n", totalAntes);
-        printf("💾 Memória liberada: ~%lu bytes\n", memoriaLiberada);
+        printf("💾 Memória liberada: ~%lu bytes\n", totalAntes * sizeof(No));
         printf("🎯 Status atual: VAZIA\n");
     } else {
         printf("\n↩️ Operação cancelada. Pilha mantida intacta.\n");
@@ -449,7 +469,7 @@ void menuLiberarPilha(PilhaDinamica *pilha) {
 // ========== FUNÇÃO PRINCIPAL ==========
 
 int main() {
-    PilhaDinamica pilha;
+    No *pilha;
     int opcao;
     
     inicializarPilha(&pilha);

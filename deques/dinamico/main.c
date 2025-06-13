@@ -15,13 +15,6 @@ typedef struct NoDeque
   struct NoDeque *proximo;
 } NoDeque;
 
-typedef struct
-{
-  NoDeque *inicio;
-  NoDeque *fim;
-  int tamanho;
-} DequeDinamico;
-
 void limparBuffer()
 {
   int c;
@@ -34,16 +27,15 @@ void removerQuebraLinha(char *str) {
 }
 
 // FUNÇÕES DO DEQUE DINÂMICO
-void inicializarDeque(DequeDinamico *deque)
+void inicializarDeque(NoDeque **inicio, NoDeque **fim)
 {
-  deque->inicio = NULL;
-  deque->fim = NULL;
-  deque->tamanho = 0;
+  *inicio = NULL;
+  *fim = NULL;
 }
 
-int dequeVazio(DequeDinamico *deque)
+int dequeVazio(NoDeque **inicio)
 {
-  return deque->inicio == NULL;
+  return *inicio == NULL;
 }
 
 // FUNÇÕES AUXILIARES PARA INTERFACE
@@ -61,11 +53,27 @@ void pausar() {
   getchar();
 }
 
-void exibirCabecalho(DequeDinamico *deque) {
-  int total = deque->tamanho;
+int contarElementos(NoDeque **inicio) {
+  if (dequeVazio(inicio)) {
+    return 0;
+  }
+
+  NoDeque *aux = *inicio;
+  int contador = 0;
+  
+  while (aux != NULL) {
+    contador++;
+    aux = aux->proximo;
+  }
+  
+  return contador;
+}
+
+void exibirCabecalho(NoDeque **inicio) {
+  int total = contarElementos(inicio);
   char status[20];
   
-  if (dequeVazio(deque)) {
+  if (dequeVazio(inicio)) {
     strcpy(status, "VAZIO");
   } else {
     strcpy(status, "ATIVO");
@@ -79,7 +87,7 @@ void exibirCabecalho(DequeDinamico *deque) {
   printf("╚══════════════════════════════════════╝\n\n");
 }
 
-int inserirInicio(DequeDinamico *deque, Tarefa elemento)
+int inserirInicio(NoDeque **inicio, NoDeque **fim, Tarefa elemento)
 {
   NoDeque *novoNo = (NoDeque *)malloc(sizeof(NoDeque));
   
@@ -88,21 +96,20 @@ int inserirInicio(DequeDinamico *deque, Tarefa elemento)
 
   novoNo->dados = elemento;
   novoNo->anterior = NULL;
-  novoNo->proximo = deque->inicio;
+  novoNo->proximo = *inicio;
 
-  if (dequeVazio(deque)) {
-    deque->inicio = novoNo;
-    deque->fim = novoNo;
+  if (dequeVazio(inicio)) {
+    *inicio = novoNo;
+    *fim = novoNo;
   } else {
-    deque->inicio->anterior = novoNo;
-    deque->inicio = novoNo;
+    (*inicio)->anterior = novoNo;
+    *inicio = novoNo;
   }
 
-  deque->tamanho++;
   return 1;
 }
 
-int inserirFim(DequeDinamico *deque, Tarefa elemento)
+int inserirFim(NoDeque **inicio, NoDeque **fim, Tarefa elemento)
 {
   NoDeque *novoNo = (NoDeque *)malloc(sizeof(NoDeque));
   
@@ -110,103 +117,100 @@ int inserirFim(DequeDinamico *deque, Tarefa elemento)
     return 0; // Falha na alocação
 
   novoNo->dados = elemento;
-  novoNo->anterior = deque->fim;
+  novoNo->anterior = *fim;
   novoNo->proximo = NULL;
 
-  if (dequeVazio(deque)) {
-    deque->inicio = novoNo;
-    deque->fim = novoNo;
+  if (dequeVazio(inicio)) {
+    *inicio = novoNo;
+    *fim = novoNo;
   } else {
-    deque->fim->proximo = novoNo;
-    deque->fim = novoNo;
+    (*fim)->proximo = novoNo;
+    *fim = novoNo;
   }
 
-  deque->tamanho++;
   return 1;
 }
 
-Tarefa removerInicio(DequeDinamico *deque)
+Tarefa removerInicio(NoDeque **inicio, NoDeque **fim)
 {
   Tarefa vazio = {-1, ""};
   
-  if (dequeVazio(deque))
+  if (dequeVazio(inicio))
     return vazio;
 
-  NoDeque *noRemover = deque->inicio;
+  NoDeque *noRemover = *inicio;
   Tarefa dadosRemovidos = noRemover->dados;
 
-  if (deque->tamanho == 1) {
+  if (*inicio == *fim) {
     // Único elemento
-    deque->inicio = NULL;
-    deque->fim = NULL;
+    *inicio = NULL;
+    *fim = NULL;
   } else {
-    deque->inicio = deque->inicio->proximo;
-    deque->inicio->anterior = NULL;
+    *inicio = (*inicio)->proximo;
+    (*inicio)->anterior = NULL;
   }
 
   free(noRemover);
-  deque->tamanho--;
 
   return dadosRemovidos;
 }
 
-Tarefa removerFim(DequeDinamico *deque)
+Tarefa removerFim(NoDeque **inicio, NoDeque **fim)
 {
   Tarefa vazio = {-1, ""};
   
-  if (dequeVazio(deque))
+  if (dequeVazio(inicio))
     return vazio;
 
-  NoDeque *noRemover = deque->fim;
+  NoDeque *noRemover = *fim;
   Tarefa dadosRemovidos = noRemover->dados;
 
-  if (deque->tamanho == 1) {
+  if (*inicio == *fim) {
     // Único elemento
-    deque->inicio = NULL;
-    deque->fim = NULL;
+    *inicio = NULL;
+    *fim = NULL;
   } else {
-    deque->fim = deque->fim->anterior;
-    deque->fim->proximo = NULL;
+    *fim = (*fim)->anterior;
+    (*fim)->proximo = NULL;
   }
 
   free(noRemover);
-  deque->tamanho--;
 
   return dadosRemovidos;
 }
 
-Tarefa consultarInicio(DequeDinamico *deque)
+Tarefa consultarInicio(NoDeque **inicio)
 {
   Tarefa vazio = {-1, ""};
   
-  if (dequeVazio(deque))
+  if (dequeVazio(inicio))
     return vazio;
 
-  return deque->inicio->dados;
+  return (*inicio)->dados;
 }
 
-Tarefa consultarFim(DequeDinamico *deque)
+Tarefa consultarFim(NoDeque **fim)
 {
   Tarefa vazio = {-1, ""};
   
-  if (dequeVazio(deque))
+  if (*fim == NULL)
     return vazio;
 
-  return deque->fim->dados;
+  return (*fim)->dados;
 }
 
-void liberarDeque(DequeDinamico *deque)
+void liberarDeque(NoDeque **inicio, NoDeque **fim)
 {
-  while (!dequeVazio(deque)) {
-    removerInicio(deque);
+  while (!dequeVazio(inicio)) {
+    removerInicio(inicio, fim);
   }
 }
 
 // FUNÇÕES UTILIZADAS PELO MENU
-void exibirMenu(DequeDinamico *deque, int *opcao)
+void exibirMenu(NoDeque **inicio, int *opcao)
 {
   limparTela();
-  exibirCabecalho(deque);
+  exibirCabecalho(inicio);
   
   printf("┌──────────────────────────────────────┐\n");
   printf("│                MENU                  │\n");
@@ -218,7 +222,7 @@ void exibirMenu(DequeDinamico *deque, int *opcao)
   printf("│  5 - Remover do fim                 │\n");
   printf("│  6 - Consultar inicio               │\n");
   printf("│  7 - Consultar fim                  │\n");
-  printf("│  8 - Navegar deque                  │\n");
+  printf("│  8 - Navegar pelo deque             │\n");
   printf("│  9 - Limpar deque                   │\n");
   printf("│  0 - Sair                           │\n");
   printf("└──────────────────────────────────────┘\n\n");
@@ -226,407 +230,403 @@ void exibirMenu(DequeDinamico *deque, int *opcao)
   scanf("%d", opcao);
 }
 
-void menuExibirDeque(DequeDinamico *deque) {
+void menuExibirDeque(NoDeque **inicio) {
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
   printf("║          DEQUE DE TAREFAS            ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
   
-  if (dequeVazio(deque)) {
+  if (dequeVazio(inicio)) {
     printf("Deque vazio! Nenhuma tarefa no deque.\n");
   } else {
-    printf("┌─────────┬─────────┬──────────────────────────────┐\n");
-    printf("│ Posicao │ Numero  │          Descricao           │\n");
-    printf("├─────────┼─────────┼──────────────────────────────┤\n");
+    printf("┌─────────┬────────┬─────────────────────────────────────────┐\n");
+    printf("│ Posicao │ Numero │              Descricao                  │\n");
+    printf("├─────────┼────────┼─────────────────────────────────────────┤\n");
     
-    NoDeque *atual = deque->inicio;
+    NoDeque *atual = *inicio;
     int posicao = 1;
     
     while (atual != NULL) {
-      char indicador[10] = "";
-      
-      if (posicao == 1 && posicao == deque->tamanho) {
-        strcpy(indicador, " (I/F)");
-      } else if (posicao == 1) {
-        strcpy(indicador, " (I)");
-      } else if (posicao == deque->tamanho) {
-        strcpy(indicador, " (F)");
-      }
-      
-      printf("│ %5d%s │ %7d │ %-28s │\n", posicao, indicador,
+      printf("│ %7d │ %6d │ %-39s │\n", posicao, 
              atual->dados.numero, 
              atual->dados.descricao);
       atual = atual->proximo;
       posicao++;
     }
-    printf("└─────────┴─────────┴──────────────────────────────┘\n");
-    printf("\nTotal no deque: %d tarefas\n", deque->tamanho);
-    printf("Legenda: (I) = Inicio, (F) = Fim\n");
+    printf("└─────────┴────────┴─────────────────────────────────────────┘\n");
+    printf("\nTotal no deque: %d tarefas\n", contarElementos(inicio));
     
-    if (deque->tamanho > 0) {
-      printf("\nExtremos do deque:\n");
-      printf("- Inicio: %d - %s\n", 
-             deque->inicio->dados.numero,
-             deque->inicio->dados.descricao);
-      printf("- Fim: %d - %s\n", 
-             deque->fim->dados.numero,
-             deque->fim->dados.descricao);
+    // Mostrar informações dos extremos
+    NoDeque *ultimo = *inicio;
+    while (ultimo->proximo != NULL) {
+      ultimo = ultimo->proximo;
+    }
+    
+    printf("Inicio: Tarefa %d - %s\n", (*inicio)->dados.numero, (*inicio)->dados.descricao);
+    printf("Fim: Tarefa %d - %s\n", ultimo->dados.numero, ultimo->dados.descricao);
+  }
+  
+  pausar();
+}
+
+void menuInserirInicio(NoDeque **inicio, NoDeque **fim)
+{
+  int sucesso;
+  Tarefa novaTarefa;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║       INSERIR NO INICIO              ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  printf("Digite o numero da tarefa: ");
+  scanf("%d", &novaTarefa.numero);
+  limparBuffer();
+
+  printf("Digite a descricao da tarefa: ");
+  fgets(novaTarefa.descricao, sizeof(novaTarefa.descricao), stdin);
+  removerQuebraLinha(novaTarefa.descricao);
+
+  sucesso = inserirInicio(inicio, fim, novaTarefa);
+
+  if (sucesso) {
+    printf("\n✅ Tarefa inserida no inicio com sucesso!\n");
+    printf("   Numero: %d\n", novaTarefa.numero);
+    printf("   Descricao: %s\n", novaTarefa.descricao);
+  } else {
+    printf("\n❌ Erro ao inserir tarefa! Memoria insuficiente.\n");
+  }
+
+  pausar();
+}
+
+void menuInserirFim(NoDeque **inicio, NoDeque **fim)
+{
+  int sucesso;
+  Tarefa novaTarefa;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║        INSERIR NO FIM                ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  printf("Digite o numero da tarefa: ");
+  scanf("%d", &novaTarefa.numero);
+  limparBuffer();
+
+  printf("Digite a descricao da tarefa: ");
+  fgets(novaTarefa.descricao, sizeof(novaTarefa.descricao), stdin);
+  removerQuebraLinha(novaTarefa.descricao);
+
+  sucesso = inserirFim(inicio, fim, novaTarefa);
+
+  if (sucesso) {
+    printf("\n✅ Tarefa inserida no fim com sucesso!\n");
+    printf("   Numero: %d\n", novaTarefa.numero);
+    printf("   Descricao: %s\n", novaTarefa.descricao);
+  } else {
+    printf("\n❌ Erro ao inserir tarefa! Memoria insuficiente.\n");
+  }
+
+  pausar();
+}
+
+void menuRemoverInicio(NoDeque **inicio, NoDeque **fim) {
+  Tarefa removida;
+
+  limparTela();
+  printf("╔══════════════════════════════════════╗\n");
+  printf("║       REMOVER DO INICIO              ║\n");
+  printf("╚══════════════════════════════════════╝\n\n");
+
+  if (dequeVazio(inicio)) {
+    printf("❌ Deque vazio! Nenhuma tarefa para remover.\n");
+  } else {
+    printf("Tarefa a ser removida do inicio:\n");
+    printf("┌────────┬─────────────────────────────────────────┐\n");
+    printf("│ Numero │              Descricao                  │\n");
+    printf("├────────┼─────────────────────────────────────────┤\n");
+    printf("│ %6d │ %-39s │\n", 
+           (*inicio)->dados.numero,
+           (*inicio)->dados.descricao);
+    printf("└────────┴─────────────────────────────────────────┘\n\n");
+
+    removida = removerInicio(inicio, fim);
+
+    if (removida.numero != -1) {
+      printf("✅ Tarefa removida do inicio com sucesso!\n");
+      printf("   Numero: %d\n", removida.numero);
+      printf("   Descricao: %s\n", removida.descricao);
     }
   }
-  
+
   pausar();
 }
 
-void menuInserirInicio(DequeDinamico *deque)
-{
-  int sucesso;
-  Tarefa novaTarefa;
-
-  limparTela();
-  printf("╔══════════════════════════════════════╗\n");
-  printf("║        INSERIR NO INICIO             ║\n");
-  printf("╚══════════════════════════════════════╝\n\n");
-
-  printf("Digite o numero da tarefa: ");
-  scanf("%d", &novaTarefa.numero);
-
-  limparBuffer();
-
-  printf("Digite a descricao da tarefa: ");
-  fgets(novaTarefa.descricao, 80, stdin);
-
-  removerQuebraLinha(novaTarefa.descricao);
-
-  sucesso = inserirInicio(deque, novaTarefa);
-
-  printf("\n");
-  if (sucesso)
-    printf("Tarefa inserida no INICIO do deque com sucesso!\n");
-  else
-    printf("Erro ao inserir tarefa no deque! (Memoria insuficiente)\n");
-    
-  pausar();
-}
-
-void menuInserirFim(DequeDinamico *deque)
-{
-  int sucesso;
-  Tarefa novaTarefa;
-
-  limparTela();
-  printf("╔══════════════════════════════════════╗\n");
-  printf("║         INSERIR NO FIM               ║\n");
-  printf("╚══════════════════════════════════════╝\n\n");
-
-  printf("Digite o numero da tarefa: ");
-  scanf("%d", &novaTarefa.numero);
-
-  limparBuffer();
-
-  printf("Digite a descricao da tarefa: ");
-  fgets(novaTarefa.descricao, 80, stdin);
-
-  removerQuebraLinha(novaTarefa.descricao);
-
-  sucesso = inserirFim(deque, novaTarefa);
-
-  printf("\n");
-  if (sucesso)
-    printf("Tarefa inserida no FIM do deque com sucesso!\n");
-  else
-    printf("Erro ao inserir tarefa no deque! (Memoria insuficiente)\n");
-    
-  pausar();
-}
-
-void menuRemoverInicio(DequeDinamico *deque) {
+void menuRemoverFim(NoDeque **inicio, NoDeque **fim) {
   Tarefa removida;
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
-  printf("║        REMOVER DO INICIO             ║\n");
+  printf("║        REMOVER DO FIM                ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
-  if (dequeVazio(deque)) {
-    printf("Deque vazio! Nada para remover.\n");
-    pausar();
-    return;
-  }
-
-  printf("Tarefa a ser removida do INICIO:\n");
-  printf("Numero: %d - %s\n\n", deque->inicio->dados.numero, 
-                                deque->inicio->dados.descricao);
-
-  removida = removerInicio(deque);
-
-  printf("Tarefa removida do inicio: %d - %s\n", removida.numero, removida.descricao);
-  
-  if (!dequeVazio(deque)) {
-    printf("Nova primeira tarefa: %d - %s\n", 
-           deque->inicio->dados.numero,
-           deque->inicio->dados.descricao);
+  if (dequeVazio(inicio)) {
+    printf("❌ Deque vazio! Nenhuma tarefa para remover.\n");
   } else {
-    printf("Deque agora esta vazio.\n");
-  }
+    // Encontrar o último elemento
+    NoDeque *ultimo = *inicio;
+    while (ultimo->proximo != NULL) {
+      ultimo = ultimo->proximo;
+    }
     
+    printf("Tarefa a ser removida do fim:\n");
+    printf("┌────────┬─────────────────────────────────────────┐\n");
+    printf("│ Numero │              Descricao                  │\n");
+    printf("├────────┼─────────────────────────────────────────┤\n");
+    printf("│ %6d │ %-39s │\n", 
+           ultimo->dados.numero,
+           ultimo->dados.descricao);
+    printf("└────────┴─────────────────────────────────────────┘\n\n");
+
+    removida = removerFim(inicio, fim);
+
+    if (removida.numero != -1) {
+      printf("✅ Tarefa removida do fim com sucesso!\n");
+      printf("   Numero: %d\n", removida.numero);
+      printf("   Descricao: %s\n", removida.descricao);
+    }
+  }
+
   pausar();
 }
 
-void menuRemoverFim(DequeDinamico *deque) {
-  Tarefa removida;
-
-  limparTela();
-  printf("╔══════════════════════════════════════╗\n");
-  printf("║         REMOVER DO FIM               ║\n");
-  printf("╚══════════════════════════════════════╝\n\n");
-
-  if (dequeVazio(deque)) {
-    printf("Deque vazio! Nada para remover.\n");
-    pausar();
-    return;
-  }
-
-  printf("Tarefa a ser removida do FIM:\n");
-  printf("Numero: %d - %s\n\n", deque->fim->dados.numero, 
-                                deque->fim->dados.descricao);
-
-  removida = removerFim(deque);
-
-  printf("Tarefa removida do fim: %d - %s\n", removida.numero, removida.descricao);
-  
-  if (!dequeVazio(deque)) {
-    printf("Nova ultima tarefa: %d - %s\n", 
-           deque->fim->dados.numero,
-           deque->fim->dados.descricao);
-  } else {
-    printf("Deque agora esta vazio.\n");
-  }
-    
-  pausar();
-}
-
-void menuConsultarInicio(DequeDinamico *deque) {
+void menuConsultarInicio(NoDeque **inicio) {
   Tarefa primeira;
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
-  printf("║        CONSULTAR INICIO              ║\n");
+  printf("║       CONSULTAR INICIO               ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
-  if (dequeVazio(deque)) {
-    printf("Deque vazio! Nenhuma tarefa para consultar.\n");
-    pausar();
-    return;
+  if (dequeVazio(inicio)) {
+    printf("❌ Deque vazio! Nenhuma tarefa no inicio.\n");
+  } else {
+    primeira = consultarInicio(inicio);
+    
+    printf("Primeira tarefa do deque:\n");
+    printf("┌────────┬─────────────────────────────────────────┐\n");
+    printf("│ Numero │              Descricao                  │\n");
+    printf("├────────┼─────────────────────────────────────────┤\n");
+    printf("│ %6d │ %-39s │\n", 
+           primeira.numero,
+           primeira.descricao);
+    printf("└────────┴─────────────────────────────────────────┘\n");
+    
+    printf("\n📋 Esta e a primeira tarefa do deque.\n");
   }
 
-  primeira = consultarInicio(deque);
-
-  printf("Primeira tarefa do deque (INICIO):\n");
-  printf("┌─────────────┬──────────────────────────┐\n");
-  printf("│  Numero     │ %-24d │\n", primeira.numero);
-  printf("│  Descricao  │ %-24s │\n", primeira.descricao);
-  printf("│  Posicao    │ Inicio do deque          │\n");
-  printf("└─────────────┴──────────────────────────┘\n");
-  
   pausar();
 }
 
-void menuConsultarFim(DequeDinamico *deque) {
+void menuConsultarFim(NoDeque **inicio, NoDeque **fim) {
   Tarefa ultima;
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
-  printf("║         CONSULTAR FIM                ║\n");
+  printf("║        CONSULTAR FIM                 ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
-  if (dequeVazio(deque)) {
-    printf("Deque vazio! Nenhuma tarefa para consultar.\n");
-    pausar();
-    return;
+  if (dequeVazio(inicio)) {
+    printf("❌ Deque vazio! Nenhuma tarefa no fim.\n");
+  } else {
+    ultima = consultarFim(fim);
+    
+    printf("Ultima tarefa do deque:\n");
+    printf("┌────────┬─────────────────────────────────────────┐\n");
+    printf("│ Numero │              Descricao                  │\n");
+    printf("├────────┼─────────────────────────────────────────┤\n");
+    printf("│ %6d │ %-39s │\n", 
+           ultima.numero,
+           ultima.descricao);
+    printf("└────────┴─────────────────────────────────────────┘\n");
+    
+    printf("\n📋 Esta e a ultima tarefa do deque.\n");
   }
 
-  ultima = consultarFim(deque);
-
-  printf("Ultima tarefa do deque (FIM):\n");
-  printf("┌─────────────┬──────────────────────────┐\n");
-  printf("│  Numero     │ %-24d │\n", ultima.numero);
-  printf("│  Descricao  │ %-24s │\n", ultima.descricao);
-  printf("│  Posicao    │ Fim do deque             │\n");
-  printf("└─────────────┴──────────────────────────┘\n");
-  
   pausar();
 }
 
-void menuNavegarDeque(DequeDinamico *deque) {
-  limparTela();
-  printf("╔══════════════════════════════════════╗\n");
-  printf("║         NAVEGAR DEQUE                ║\n");
-  printf("╚══════════════════════════════════════╝\n\n");
-
-  if (dequeVazio(deque)) {
-    printf("Deque vazio! Nenhuma tarefa para navegar.\n");
+void menuNavegarDeque(NoDeque **inicio) {
+  if (dequeVazio(inicio)) {
+    limparTela();
+    printf("╔══════════════════════════════════════╗\n");
+    printf("║       NAVEGAR PELO DEQUE             ║\n");
+    printf("╚══════════════════════════════════════╝\n\n");
+    printf("❌ Deque vazio! Nenhuma tarefa para navegar.\n");
     pausar();
     return;
   }
 
-  int opcao;
-  NoDeque *atual = deque->inicio;
+  NoDeque *atual = *inicio;
   int posicao = 1;
+  int total = contarElementos(inicio);
+  int opcao;
 
   do {
     limparTela();
     printf("╔══════════════════════════════════════╗\n");
-    printf("║         NAVEGACAO BIDIRECIONAL       ║\n");
+    printf("║       NAVEGAR PELO DEQUE             ║\n");
     printf("╚══════════════════════════════════════╝\n\n");
     
-    printf("Posicao atual: %d/%d\n", posicao, deque->tamanho);
-    printf("┌─────────────┬──────────────────────────┐\n");
-    printf("│  Numero     │ %-24d │\n", atual->dados.numero);
-    printf("│  Descricao  │ %-24s │\n", atual->dados.descricao);
-    printf("└─────────────┴──────────────────────────┘\n\n");
+    printf("📍 Posição: %d de %d\n", posicao, total);
+    printf("┌────────┬─────────────────────────────────────────┐\n");
+    printf("│ Numero │              Descricao                  │\n");
+    printf("├────────┼─────────────────────────────────────────┤\n");
+    printf("│ %6d │ %-39s │\n", 
+           atual->dados.numero,
+           atual->dados.descricao);
+    printf("└────────┴─────────────────────────────────────────┘\n\n");
     
-    printf("Navegacao:\n");
-    if (atual->anterior != NULL) {
-      printf("1 - Anterior (← %d)\n", atual->anterior->dados.numero);
-    } else {
-      printf("1 - Anterior (indisponivel)\n");
-    }
+    printf("┌──────────────────────────────────────┐\n");
+    printf("│           NAVEGAÇÃO                  │\n");
+    printf("├──────────────────────────────────────┤\n");
+    printf("│  1 - Proximo (→)                    │\n");
+    printf("│  2 - Anterior (←)                   │\n");
+    printf("│  3 - Ir para o inicio               │\n");
+    printf("│  4 - Ir para o fim                  │\n");
+    printf("│  0 - Voltar ao menu principal       │\n");
+    printf("└──────────────────────────────────────┘\n\n");
     
-    if (atual->proximo != NULL) {
-      printf("2 - Proximo (→ %d)\n", atual->proximo->dados.numero);
-    } else {
-      printf("2 - Proximo (indisponivel)\n");
-    }
-    
-    printf("3 - Ir para o inicio\n");
-    printf("4 - Ir para o fim\n");
-    printf("0 - Voltar ao menu principal\n\n");
-    printf("Escolha: ");
+    printf("Escolha uma opcao: ");
     scanf("%d", &opcao);
     
     switch (opcao) {
-      case 1:
-        if (atual->anterior != NULL) {
-          atual = atual->anterior;
-          posicao--;
-        }
-        break;
-      case 2:
+      case 1: // Próximo
         if (atual->proximo != NULL) {
           atual = atual->proximo;
           posicao++;
+        } else {
+          printf("\n❌ Ja esta na ultima tarefa!\n");
+          pausar();
         }
         break;
-      case 3:
-        atual = deque->inicio;
-        posicao = 1;
+        
+      case 2: // Anterior
+        if (atual->anterior != NULL) {
+          atual = atual->anterior;
+          posicao--;
+        } else {
+          printf("\n❌ Ja esta na primeira tarefa!\n");
+          pausar();
+        }
         break;
-      case 4:
-        atual = deque->fim;
-        posicao = deque->tamanho;
+        
+      case 3: // Ir para o início
+        atual = *inicio;
+        posicao = 1;
+        printf("\n✅ Navegou para o inicio do deque!\n");
+        pausar();
+        break;
+        
+      case 4: // Ir para o fim
+        atual = *inicio;
+        posicao = 1;
+        while (atual->proximo != NULL) {
+          atual = atual->proximo;
+          posicao++;
+        }
+        printf("\n✅ Navegou para o fim do deque!\n");
+        pausar();
+        break;
+        
+      case 0:
+        break;
+        
+      default:
+        printf("\n❌ Opcao invalida! Tente novamente.\n");
+        pausar();
         break;
     }
   } while (opcao != 0);
 }
 
-void menuLimparDeque(DequeDinamico *deque) {
-  char confirmacao;
+void menuLimparDeque(NoDeque **inicio, NoDeque **fim) {
+  int confirmacao;
+  int totalAntes = contarElementos(inicio);
 
   limparTela();
   printf("╔══════════════════════════════════════╗\n");
   printf("║          LIMPAR DEQUE                ║\n");
   printf("╚══════════════════════════════════════╝\n\n");
 
-  if (dequeVazio(deque)) {
-    printf("Deque ja esta vazio!\n");
-    pausar();
-    return;
-  }
-
-  printf("ATENCAO: Esta operacao ira remover TODAS as tarefas do deque!\n");
-  printf("Tarefas no deque: %d\n\n", deque->tamanho);
-  
-  printf("Tem certeza? (s/N): ");
-  limparBuffer();
-  scanf("%c", &confirmacao);
-
-  if (confirmacao == 's' || confirmacao == 'S') {
-    liberarDeque(deque);
-    printf("\nDeque limpo com sucesso! Todas as tarefas foram removidas.\n");
+  if (dequeVazio(inicio)) {
+    printf("❌ O deque ja esta vazio!\n");
   } else {
-    printf("\nOperacao cancelada. Deque mantido inalterado.\n");
+    printf("⚠️  ATENÇÃO: Esta operacao ira remover TODAS as %d tarefas do deque!\n", totalAntes);
+    printf("   Esta acao nao pode ser desfeita.\n\n");
+    printf("Deseja realmente limpar o deque? (1-Sim / 0-Nao): ");
+    scanf("%d", &confirmacao);
+
+    if (confirmacao == 1) {
+      liberarDeque(inicio, fim);
+      printf("\n✅ Deque limpo com sucesso!\n");
+      printf("   %d tarefas foram removidas.\n", totalAntes);
+    } else {
+      printf("\n❌ Operacao cancelada. Deque mantido.\n");
+    }
   }
-    
+
   pausar();
 }
 
 int main()
 {
-  DequeDinamico deque;
+  NoDeque *inicio, *fim;
   int opcao;
 
-  inicializarDeque(&deque);
+  inicializarDeque(&inicio, &fim);
 
-  do
-  {
-    exibirMenu(&deque, &opcao);
+  do {
+    exibirMenu(&inicio, &opcao);
 
-    switch (opcao)
-    {
-    case 1:
-      menuExibirDeque(&deque);
-      break;
-
-    case 2:
-      menuInserirInicio(&deque);
-      break;
-
-    case 3:
-      menuInserirFim(&deque);
-      break;
-
-    case 4:
-      menuRemoverInicio(&deque);
-      break;
-
-    case 5:
-      menuRemoverFim(&deque);
-      break;
-      
-    case 6:
-      menuConsultarInicio(&deque);
-      break;
-      
-    case 7:
-      menuConsultarFim(&deque);
-      break;
-      
-    case 8:
-      menuNavegarDeque(&deque);
-      break;
-      
-    case 9:
-      menuLimparDeque(&deque);
-      break;
-      
-    case 0:
-      liberarDeque(&deque); // Liberar memoria antes de sair
-      limparTela();
-      printf("╔══════════════════════════════════════╗\n");
-      printf("║         ATE A PROXIMA!               ║\n");
-      printf("║                                      ║\n");
-      printf("║    Obrigado por usar o sistema!      ║\n");
-      printf("╚══════════════════════════════════════╝\n\n");
-      break;
-
-    default:
-      limparTela();
-      printf("╔══════════════════════════════════════╗\n");
-      printf("║          OPCAO INVALIDA!             ║\n");
-      printf("╚══════════════════════════════════════╝\n\n");
-      printf("Por favor, escolha uma opcao valida (0-9).\n");
-      pausar();
-      break;
+    switch (opcao) {
+      case 1:
+        menuExibirDeque(&inicio);
+        break;
+      case 2:
+        menuInserirInicio(&inicio, &fim);
+        break;
+      case 3:
+        menuInserirFim(&inicio, &fim);
+        break;
+      case 4:
+        menuRemoverInicio(&inicio, &fim);
+        break;
+      case 5:
+        menuRemoverFim(&inicio, &fim);
+        break;
+      case 6:
+        menuConsultarInicio(&inicio);
+        break;
+      case 7:
+        menuConsultarFim(&inicio, &fim);
+        break;
+      case 8:
+        menuNavegarDeque(&inicio);
+        break;
+      case 9:
+        menuLimparDeque(&inicio, &fim);
+        break;
+      case 0:
+        printf("\n👋 Encerrando o programa...\n");
+        liberarDeque(&inicio, &fim);
+        printf("✅ Memoria liberada com sucesso!\n");
+        break;
+      default:
+        printf("\n❌ Opcao invalida! Tente novamente.\n");
+        pausar();
+        break;
     }
   } while (opcao != 0);
 

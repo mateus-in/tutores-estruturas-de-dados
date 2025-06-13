@@ -1,410 +1,208 @@
-# Deque Dinâmico em C
+# Deque Dinâmico
 
-## Conceito
+## Descrição
+Implementação de um **Deque Dinâmico** (Double-ended Queue) em C, utilizando lista duplamente encadeada com alocação dinâmica de memória. Esta estrutura permite inserção e remoção eficiente em ambas as extremidades (início e fim).
 
-Um **Deque Dinâmico** (Double-ended Queue) é uma estrutura de dados linear que permite inserção e remoção eficiente em ambas as extremidades, implementada através de lista duplamente encadeada. Oferece máxima flexibilidade combinando características de pilhas e filas, sem limitações de tamanho pré-definido.
+## Características da Implementação
 
-### Características Principais
-
-- **Dupla Extremidade**: Inserção e remoção no início e no fim
-- **Lista Duplamente Encadeada**: Cada nó possui ponteiros anterior e próximo
-- **Tamanho Dinâmico**: Cresce e diminui conforme necessário
-- **Navegação Bidirecional**: Permite percorrer em ambas as direções
-- **Operações O(1)**: Todas as operações nas extremidades são constantes
-
-### Vantagens
-
-- **Flexibilidade Total**: Sem limitações de tamanho
-- **Eficiência de Memória**: Usa apenas o espaço necessário
-- **Navegação Bidirecional**: Percorre em qualquer direção
-- **Operações Simétricas**: Início e fim têm mesma eficiência
-- **Versatilidade**: Funciona como pilha, fila ou deque
-
-### Desvantagens
-
-- **Overhead de Ponteiros**: Dois ponteiros por nó
-- **Fragmentação de Memória**: Nós espalhados na memória
-- **Complexidade**: Implementação mais complexa
-- **Gerenciamento de Memória**: Risco de vazamentos se mal implementada
-
-## Estrutura de Dados
-
-### Definição do Elemento (Tarefa)
+### Estruturas de Dados
 ```c
 typedef struct {
-    int numero;
-    char descricao[80];
+  int numero;
+  char descricao[80];
 } Tarefa;
-```
 
-### Definição do Nó do Deque
-```c
 typedef struct NoDeque {
-    Tarefa dados;
-    struct NoDeque *anterior;
-    struct NoDeque *proximo;
+  Tarefa dados;
+  struct NoDeque *anterior;
+  struct NoDeque *proximo;
 } NoDeque;
 ```
 
-### Definição do Deque Dinâmico
+### Declaração no main()
 ```c
-typedef struct {
-    NoDeque *inicio;
-    NoDeque *fim;
-    int tamanho;
-} DequeDinamico;
+NoDeque *inicio, *fim;
+inicializarDeque(&inicio, &fim);
 ```
 
-- `inicio`: Ponteiro para o primeiro nó
-- `fim`: Ponteiro para o último nó
-- `tamanho`: Contador de elementos no deque
+### Funções Principais
+- `void inicializarDeque(NoDeque **inicio, NoDeque **fim)` - Inicializa o deque como vazio
+- `int dequeVazio(NoDeque **inicio)` - Verifica se o deque está vazio
+- `int inserirInicio(NoDeque **inicio, NoDeque **fim, Tarefa elemento)` - Insere no início
+- `int inserirFim(NoDeque **inicio, NoDeque **fim, Tarefa elemento)` - Insere no fim
+- `Tarefa removerInicio(NoDeque **inicio, NoDeque **fim)` - Remove do início
+- `Tarefa removerFim(NoDeque **inicio, NoDeque **fim)` - Remove do fim
+- `Tarefa consultarInicio(NoDeque **inicio)` - Consulta o primeiro elemento
+- `Tarefa consultarFim(NoDeque **fim)` - Consulta o último elemento
+- `void liberarDeque(NoDeque **inicio, NoDeque **fim)` - Libera toda a memória
+
+## Vantagens da Implementação Dinâmica
+
+### ✅ Pontos Positivos
+- **Flexibilidade total**: Inserção/remoção eficiente em ambas as extremidades
+- **Tamanho dinâmico**: Cresce e diminui conforme necessário
+- **Navegação bidirecional**: Permite percorrer em ambas as direções
+- **Operações O(1)**: Todas as operações básicas em tempo constante
+
+### ⚠️ Pontos de Atenção
+- **Overhead de ponteiros**: Cada nó requer dois ponteiros (anterior e próximo)
+- **Complexidade de implementação**: Mais complexo que estruturas simples
+- **Gerenciamento de memória**: Necessário controlar alocação/liberação
+
+## Complexidade das Operações
+
+| Operação | Complexidade | Descrição |
+|----------|--------------|-----------|
+| Inserir Início | O(1) | Inserção no início do deque |
+| Inserir Fim | O(1) | Inserção no fim do deque |
+| Remover Início | O(1) | Remoção do início do deque |
+| Remover Fim | O(1) | Remoção do fim do deque |
+| Consultar Extremos | O(1) | Acesso aos elementos das extremidades |
+| Busca | O(n) | Busca por elemento específico |
+| Espaço | O(n) | Proporcional ao número de elementos |
+
+## Funcionalidades do Menu
+
+1. **Exibir deque** - Mostra todas as tarefas do início ao fim
+2. **Inserir no início** - Adiciona nova tarefa no início do deque
+3. **Inserir no fim** - Adiciona nova tarefa no fim do deque
+4. **Remover do início** - Remove e retorna a primeira tarefa
+5. **Remover do fim** - Remove e retorna a última tarefa
+6. **Consultar início** - Visualiza a primeira tarefa sem remover
+7. **Consultar fim** - Visualiza a última tarefa sem remover
+8. **Navegar pelo deque** - Navegação bidirecional interativa
+9. **Limpar deque** - Remove todas as tarefas do deque
+
+## Aplicações Práticas
+
+### Sistemas de Processamento
+- **Fila de prioridade dupla**: Processamento por ambas as extremidades
+- **Buffer circular**: Implementação eficiente de buffers
+- **Undo/Redo avançado**: Navegação bidirecional no histórico
+
+### Algoritmos
+- **Busca bidirecional**: Algoritmos que exploram ambas as direções
+- **Sliding window**: Janela deslizante para análise de dados
+- **Palindrome checking**: Verificação de palíndromos
+
+### Estruturas de Dados Avançadas
+- **Implementação de outras estruturas**: Base para filas de prioridade
+- **Cache LRU**: Least Recently Used com acesso rápido
+- **Simulações**: Modelagem de sistemas com entrada/saída dupla
+
+## Exemplo de Uso
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    NoDeque *inicio, *fim;
+    Tarefa tarefa1 = {1, "Primeira tarefa"};
+    Tarefa tarefa2 = {2, "Segunda tarefa"};
+    
+    // Inicializar deque
+    inicializarDeque(&inicio, &fim);
+    
+    // Inserir tarefas
+    inserirInicio(&inicio, &fim, tarefa1);
+    inserirFim(&inicio, &fim, tarefa2);
+    
+    // Processar tarefas
+    while (!dequeVazio(&inicio)) {
+        Tarefa atual = removerInicio(&inicio, &fim);
+        printf("Processando: %s\n", atual.descricao);
+    }
+    
+    // Liberar memória
+    liberarDeque(&inicio, &fim);
+    
+    return 0;
+}
+```
+
+## Comparação com Outras Estruturas
+
+| Aspecto | Fila Simples | Pilha | Deque |
+|---------|--------------|-------|-------|
+| **Inserção** | Apenas no fim | Apenas no topo | Início e fim |
+| **Remoção** | Apenas do início | Apenas do topo | Início e fim |
+| **Flexibilidade** | Limitada (FIFO) | Limitada (LIFO) | Máxima |
+| **Complexidade** | Simples | Simples | Moderada |
+| **Uso de memória** | Menor overhead | Menor overhead | Maior overhead |
+| **Aplicações** | Processamento sequencial | Recursão, parsing | Algoritmos avançados |
+
+## Detalhes Técnicos
+
+### Gerenciamento de Memória
+- Cada nó é alocado individualmente com `malloc()`
+- Liberação automática com `free()` durante remoção
+- Função `liberarDeque()` garante limpeza completa
+- Manutenção de ponteiros `anterior` e `proximo`
+
+### Tratamento de Erros
+- Verificação de falha na alocação de memória
+- Retorno de valores especiais para operações inválidas
+- Validação de deque vazio antes das operações
+- Manutenção consistente dos ponteiros de extremidade
+
+### Interface do Usuário
+- Menu interativo com navegação intuitiva
+- Exibição formatada com bordas ASCII
+- Feedback visual para todas as operações
+- Navegação bidirecional única entre as estruturas
 
 ## Funcionamento Visual
 
 ```
-Estado Inicial: inicio = NULL, fim = NULL, tamanho = 0
+Estado Inicial: inicio = NULL, fim = NULL
 
-Inserir A no fim:
-[A] ⟷ NULL
+Após inserirInicio(A):
+[A] <-> NULL
 ↑
 inicio/fim
 
-Inserir B no início:
-[B] ⟷ [A] ⟷ NULL
-↑      ↑
-inicio fim
+Após inserirFim(B):
+[A] <-> [B] <-> NULL
+↑       ↑
+inicio  fim
 
-Inserir C no fim:
-[B] ⟷ [A] ⟷ [C] ⟷ NULL
-↑             ↑
-inicio        fim
+Após inserirInicio(C):
+[C] <-> [A] <-> [B] <-> NULL
+↑               ↑
+inicio          fim
 
 Navegação bidirecional:
-← [B] ⟷ [A] ⟷ [C] →
+[C] ←→ [A] ←→ [B]
 ```
 
-## Funções Implementadas
+## Funcionalidade Especial: Navegação Bidirecional
 
-### Funções Auxiliares
+O deque dinâmico oferece uma funcionalidade única de navegação interativa:
 
-#### `void limparBuffer()`
-Remove caracteres residuais do buffer de entrada.
+- **Próximo (→)**: Move para o próximo elemento
+- **Anterior (←)**: Move para o elemento anterior
+- **Ir para o início**: Salta diretamente para o primeiro elemento
+- **Ir para o fim**: Salta diretamente para o último elemento
 
-#### `void removerQuebraLinha(char *str)`
-Remove o caractere de quebra de linha de uma string.
-
-#### `void limparTela()`
-Limpa a tela do terminal de forma multiplataforma.
-
-#### `void pausar()`
-Pausa a execução aguardando ENTER do usuário.
-
-#### `void exibirCabecalho(DequeDinamico *deque)`
-Exibe cabeçalho com status do deque (VAZIO/ATIVO) e contador de tarefas.
-
-### Funções de Manipulação do Deque
-
-#### `void inicializarDeque(DequeDinamico *deque)`
-**Descrição**: Inicializa um deque dinâmico vazio.
-
-**Parâmetros**:
-- `deque`: Ponteiro para a estrutura do deque
-
-**Funcionamento**: 
-- Define `inicio = NULL`
-- Define `fim = NULL` 
-- Define `tamanho = 0`
-
-**Complexidade**: O(1)
-
----
-
-#### `int dequeVazio(DequeDinamico *deque)`
-**Descrição**: Verifica se o deque está vazio.
-
-**Retorno**: 
-- `1` se vazio (`inicio == NULL`)
-- `0` se contém elementos
-
-**Complexidade**: O(1)
-
----
-
-#### `int inserirInicio(DequeDinamico *deque, Tarefa elemento)`
-**Descrição**: Insere elemento no início do deque.
-
-**Parâmetros**:
-- `deque`: Ponteiro para a estrutura do deque
-- `elemento`: Tarefa a ser inserida
-
-**Retorno**: 
-- `1` se inserção bem-sucedida
-- `0` se falha na alocação de memória
-
-**Funcionamento**: 
-1. Aloca memória para novo nó
-2. Verifica se alocação foi bem-sucedida
-3. Define dados e `anterior = NULL`
-4. Se deque vazio: `inicio` e `fim` apontam para novo nó
-5. Se não vazio: liga novo nó ao início atual e atualiza ponteiros
-6. Incrementa tamanho
-
-**Complexidade**: O(1)
-
-**Exemplo**:
-```c
-Tarefa t = {101, "Implementar função"};
-if (inserirInicio(&deque, t)) {
-    printf("Tarefa inserida no início!\n");
-} else {
-    printf("Erro: Memória insuficiente!\n");
-}
-```
-
----
-
-#### `int inserirFim(DequeDinamico *deque, Tarefa elemento)`
-**Descrição**: Insere elemento no fim do deque.
-
-**Funcionamento**: 
-1. Aloca memória para novo nó
-2. Define dados e `proximo = NULL`
-3. Se deque vazio: `inicio` e `fim` apontam para novo nó
-4. Se não vazio: liga novo nó ao fim atual e atualiza ponteiros
-5. Incrementa tamanho
-
-**Complexidade**: O(1)
-
----
-
-#### `Tarefa removerInicio(DequeDinamico *deque)`
-**Descrição**: Remove elemento do início do deque.
-
-**Retorno**: 
-- Tarefa removida
-- Tarefa com número -1 se deque vazio
-
-**Funcionamento**: 
-1. Verifica se deque está vazio
-2. Salva dados do nó a ser removido
-3. Se único elemento: `inicio` e `fim` = NULL
-4. Se múltiplos: atualiza `inicio` e ajusta ponteiro `anterior`
-5. Libera memória do nó removido
-6. Decrementa tamanho
-7. Retorna dados removidos
-
-**Complexidade**: O(1)
-
----
-
-#### `Tarefa removerFim(DequeDinamico *deque)`
-**Descrição**: Remove elemento do fim do deque.
-
-**Funcionamento**: Similar ao `removerInicio`, mas opera no fim da lista.
-
-**Complexidade**: O(1)
-
----
-
-#### `Tarefa consultarInicio(DequeDinamico *deque)`
-**Descrição**: Consulta primeiro elemento sem removê-lo.
-
-**Retorno**: Tarefa do início ou número -1 se vazio
-
-**Complexidade**: O(1)
-
----
-
-#### `Tarefa consultarFim(DequeDinamico *deque)`
-**Descrição**: Consulta último elemento sem removê-lo.
-
-**Retorno**: Tarefa do fim ou número -1 se vazio
-
-**Complexidade**: O(1)
-
----
-
-#### `void liberarDeque(DequeDinamico *deque)`
-**Descrição**: Remove todos os elementos, liberando toda a memória.
-
-**Funcionamento**: 
-1. Chama `removerInicio()` repetidamente até deque ficar vazio
-2. Cada chamada libera a memória de um nó
-
-**Complexidade**: O(n), onde n é o número de elementos
-
-## Funções de Interface
-
-### `void exibirMenu(DequeDinamico *deque, int *opcao)`
-Exibe menu principal com 10 opções específicas para deque dinâmico.
-
-### `void menuExibirDeque(DequeDinamico *deque)`
-Exibe todos os elementos com indicadores visuais:
-- Posição no deque
-- Marcadores (I) para início, (F) para fim
-- Informações dos extremos
-- Contador total
-
-### `void menuInserirInicio(DequeDinamico *deque)`
-Interface para inserção no início com tratamento de falha de alocação.
-
-### `void menuInserirFim(DequeDinamico *deque)`
-Interface para inserção no fim com validação de memória.
-
-### `void menuRemoverInicio(DequeDinamico *deque)`
-Interface para remoção do início mostrando:
-- Elemento que será removido
-- Confirmação da remoção
-- Novo primeiro elemento (se houver)
-
-### `void menuRemoverFim(DequeDinamico *deque)`
-Interface para remoção do fim com feedback similar.
-
-### `void menuConsultarInicio(DequeDinamico *deque)`
-Interface para consultar primeiro elemento sem remover.
-
-### `void menuConsultarFim(DequeDinamico *deque)`
-Interface para consultar último elemento sem remover.
-
-### `void menuNavegarDeque(DequeDinamico *deque)`
-**Funcionalidade Especial**: Interface de navegação bidirecional que permite:
-- Navegar para elemento anterior/próximo
-- Saltar para início/fim
-- Visualizar elemento atual com contexto
-- Demonstrar capacidade de navegação da lista duplamente encadeada
-
-### `void menuLimparDeque(DequeDinamico *deque)`
-Interface para limpar todo o deque com:
-- Confirmação do usuário
-- Liberação completa de memória
-- Feedback sobre operação
-
-## Aplicações Práticas
-
-### Editores de Texto
-- **Undo/Redo**: Operações em ambas as extremidades
-- **Navegação**: Movimento bidirecional no histórico
-- **Buffer Circular**: Gerenciamento eficiente de comandos
-
-### Sistemas de Cache
-- **LRU Cache**: Elementos recentes no início
-- **Eviction Policy**: Remoção flexível de extremidades
-- **Hit/Miss Tracking**: Movimentação eficiente de elementos
-
-### Algoritmos de Grafos
-- **BFS Bidirecional**: Busca de ambas as extremidades
-- **Pathfinding**: Exploração em múltiplas direções
-- **Sliding Window**: Janela deslizante otimizada
-
-### Sistemas de Tarefas
-- **Priorização Dinâmica**: Tarefas urgentes no início
-- **Processamento Flexível**: Remoção de qualquer extremidade
-- **Cancelamento**: Remoção eficiente de tarefas
+Esta funcionalidade demonstra a capacidade bidirecional da estrutura, permitindo explorar os dados em ambas as direções de forma intuitiva.
 
 ## Compilação e Execução
 
 ```bash
+# Compilar
 gcc -o programa main.c
+
+# Executar
 ./programa
 ```
 
-## Análise de Complexidade
+## Estrutura do Código
 
-| Operação | Complexidade Temporal | Complexidade Espacial |
-|----------|----------------------|----------------------|
-| **Inicializar** | O(1) | O(1) |
-| **Inserir Início** | O(1) | O(1) por elemento |
-| **Inserir Fim** | O(1) | O(1) por elemento |
-| **Remover Início** | O(1) | O(1) |
-| **Remover Fim** | O(1) | O(1) |
-| **Consultar** | O(1) | O(1) |
-| **Navegar** | O(1) por movimento | O(1) |
-| **Liberar Deque** | O(n) | O(1) |
-| **Exibir Deque** | O(n) | O(1) |
+- **Estruturas de dados**: Definição de Tarefa e NoDeque
+- **Funções principais**: Operações básicas do deque
+- **Interface**: Funções de menu e interação
+- **Navegação**: Sistema único de navegação bidirecional
+- **Utilitários**: Funções auxiliares para formatação
 
-## Gestão de Memória
-
-### Alocação
-- Cada inserção aloca memória para um novo nó
-- Verificação de falha na alocação (`malloc` retorna `NULL`)
-- Estrutura cresce dinamicamente conforme necessário
-
-### Liberação
-- Cada remoção libera memória do nó removido
-- Função `liberarDeque()` remove todos os elementos
-- Importante chamar antes de encerrar programa
-
-### Boas Práticas
-```c
-// Sempre verificar retorno das inserções
-if (!inserirInicio(&deque, tarefa)) {
-    printf("Erro: Memória insuficiente!\n");
-}
-
-// Liberar memória antes de sair
-liberarDeque(&deque);
-```
-
-## Vantagens da Lista Duplamente Encadeada
-
-1. **Navegação Bidirecional**: Movimento em qualquer direção
-2. **Remoção Eficiente**: Não precisa buscar nó anterior
-3. **Operações Simétricas**: Início e fim têm mesma complexidade
-4. **Flexibilidade Máxima**: Suporte completo para deque
-
-## Comparação: Deque Estático vs Dinâmico
-
-| Aspecto | Deque Estático | Deque Dinâmico |
-|---------|----------------|----------------|
-| **Tamanho** | Fixo | Ilimitado* |
-| **Memória** | Pré-alocada | Sob demanda |
-| **Navegação** | Índices | Ponteiros |
-| **Overhead** | Baixo | Ponteiros extras |
-| **Implementação** | Simples | Mais complexa |
-| **Falhas** | Overflow | Out of memory |
-| **Performance** | Previsível | Dependente do sistema |
-
-*Limitado pela memória disponível do sistema
-
-## Padrões de Uso Avançados
-
-### Deque como Buffer Circular
-```c
-// Inserir no fim, remover do início (FIFO)
-inserirFim(&deque, novaTarefa);
-tarefa = removerInicio(&deque);
-```
-
-### Deque como Pilha Dupla
-```c
-// Duas pilhas em uma estrutura
-inserirInicio(&deque, tarefaA);  // Pilha A
-inserirFim(&deque, tarefaB);     // Pilha B
-tarefaA = removerInicio(&deque); // Pop A
-tarefaB = removerFim(&deque);    // Pop B
-```
-
-### Processamento Bidirecional
-```c
-// Processar de ambas as extremidades
-while (!dequeVazio(&deque)) {
-    if (condicaoA) {
-        tarefa = removerInicio(&deque);
-    } else {
-        tarefa = removerFim(&deque);
-    }
-    processar(tarefa);
-}
-```
-
-## Considerações de Implementação
-
-1. **Ponteiros Duplos**: Manutenção cuidadosa de `anterior` e `proximo`
-2. **Casos Especiais**: Tratamento de deque vazio e único elemento
-3. **Liberação de Memória**: Essencial para evitar vazamentos
-4. **Verificação de NULL**: Sempre verificar ponteiros antes de usar
-5. **Navegação Segura**: Validação de limites na navegação
-
----
-
-**Desenvolvido como material didático para ensino de Estruturas de Dados em C** 
+Esta implementação demonstra os conceitos fundamentais de deques dinâmicos, oferecendo uma base sólida para compreensão de estruturas de dados bidirecionais e suas aplicações avançadas. 
