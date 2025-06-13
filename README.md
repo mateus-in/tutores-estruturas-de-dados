@@ -63,6 +63,42 @@ Uma estrutura dinâmica onde cada elemento possui ponteiros para o próximo e pa
 
 **Arquivo:** `listas/duplamente-encadeada/main.c`
 
+---
+
+## Filas (Queues)
+
+### 5. Fila Estática
+Uma estrutura de dados FIFO (First In, First Out) implementada com array circular.
+
+**Características:**
+- Princípio FIFO: primeiro a entrar, primeiro a sair
+- Implementação circular para otimizar uso do array
+- Tamanho fixo definido em tempo de compilação
+- Operações de enqueue (inserir) e dequeue (remover)
+- Sistema de gerenciamento de processos
+
+**Documentação:** [Fila Estática](filas/estatica/README.md)
+
+**Arquivo:** `filas/estatica/main.c`
+
+---
+
+### 6. Fila Dinâmica
+Uma estrutura FIFO implementada com lista encadeada, sem limitação de tamanho.
+
+**Características:**
+- Crescimento dinâmico conforme demanda
+- Gestão automática de memória
+- Ponteiros para início e fim para operações O(1)
+- Estatísticas de uso de memória
+- Sistema de gerenciamento de tickets
+
+**Documentação:** [Fila Dinâmica](filas/dinamica/README.md)
+
+**Arquivo:** `filas/dinamica/main.c`
+
+---
+
 ## Funcionalidades Comuns
 
 Todas as implementações incluem:
@@ -117,6 +153,16 @@ gcc -o programa main.c
 cd listas/duplamente-encadeada
 gcc -o programa main.c
 ./programa
+
+# Fila Estática
+cd filas/estatica
+gcc -o programa main.c
+./programa
+
+# Fila Dinâmica
+cd filas/dinamica
+gcc -o programa main.c
+./programa
 ```
 
 ### Compilação com Make (Opcional)
@@ -146,6 +192,13 @@ tutores-estruturas-de-dados/
 │   └── duplamente-encadeada/
 │       ├── main.c               # Implementação da lista duplamente encadeada
 │       └── README.md            # Documentação detalhada
+├── filas/
+│   ├── estatica/
+│   │   ├── main.c               # Implementação da fila estática
+│   │   └── README.md            # Documentação detalhada
+│   └── dinamica/
+│       ├── main.c               # Implementação da fila dinâmica
+│       └── README.md            # Documentação detalhada
 ```
 
 ## Características Técnicas
@@ -170,6 +223,18 @@ tutores-estruturas-de-dados/
 - **Navegação:** Bidirecional (ante + prox)
 - **Operações:** Inserir início/fim, remover início/fim, pesquisar, remover específico
 
+### Fila Estática
+- **Elemento:** Processo (ID + descrição)
+- **Princípio:** FIFO (First In, First Out)
+- **Implementação:** Array circular
+- **Operações:** Enqueue (inserir fim), dequeue (remover início), consultar próximo
+
+### Fila Dinâmica
+- **Elemento:** Ticket (prioridade + tarefa)
+- **Princípio:** FIFO (First In, First Out)
+- **Implementação:** Lista encadeada
+- **Operações:** Enqueue (inserir fim), dequeue (remover início), estatísticas
+
 ## Conceitos Abordados
 
 ### Gerenciamento de Memória
@@ -189,6 +254,8 @@ tutores-estruturas-de-dados/
 - Estruturas (structs)
 - Ponteiros para estruturas
 - Encadeamento de nós
+- Filas e princípio FIFO
+- Arrays circulares
 
 ## Objetivos Educacionais
 
@@ -202,19 +269,20 @@ Este projeto foi desenvolvido para:
 
 ## Comparação entre Estruturas
 
-| Aspecto | Lista Estática | Lista Encadeada | Lista Ordenada | Lista Duplamente Encadeada |
-|---------|---------------|-----------------|----------------|----------------------------|
-| **Tamanho** | Fixo | Dinâmico | Dinâmico | Dinâmico |
-| **Memória** | Contígua | Fragmentada | Fragmentada | Fragmentada |
-| **Navegação** | Índice | Unidirecional | Unidirecional | Bidirecional |
-| **Inserção** | O(n) | O(1)/O(n) | O(n) | O(1)/O(n) |
-| **Remoção** | O(n) | O(1)/O(n) | O(1)/O(n) | O(1)/O(n) |
-| **Busca** | O(n) | O(n) | O(n)* | O(n) |
-| **Ordenação** | Manual | Manual | Automática | Manual |
-| **Complexidade** | Baixa | Média | Alta | Alta |
-| **Ponteiros/Nó** | 0 | 1 | 1 | 2 |
+| Aspecto | Lista Estática | Lista Encadeada | Lista Ordenada | Lista Dupla | Fila Estática | Fila Dinâmica |
+|---------|---------------|-----------------|----------------|-------------|---------------|---------------|
+| **Tamanho** | Fixo | Dinâmico | Dinâmico | Dinâmico | Fixo | Dinâmico |
+| **Memória** | Contígua | Fragmentada | Fragmentada | Fragmentada | Contígua | Fragmentada |
+| **Navegação** | Índice | Unidirecional | Unidirecional | Bidirecional | FIFO apenas | FIFO apenas |
+| **Inserção** | O(n) | O(1)/O(n) | O(n) | O(1)/O(n) | O(1) | O(1) |
+| **Remoção** | O(n) | O(1)/O(n) | O(1)/O(n) | O(1)/O(n) | O(1) | O(1) |
+| **Busca** | O(n) | O(n) | O(n)* | O(n) | N/A | N/A |
+| **Ordenação** | Manual | Manual | Automática | Manual | N/A | N/A |
+| **Acesso** | Qualquer | Sequencial | Sequencial | Sequencial | Extremidades | Extremidades |
+| **Complexidade** | Baixa | Média | Alta | Alta | Baixa | Média |
 
-*Pode terminar antes devido à ordenação
+*Pode terminar antes devido à ordenação  
+N/A = Não aplicável (filas permitem acesso apenas às extremidades)
 
 ## Contribuições
 
