@@ -1,1 +1,13 @@
 draft.c
+
+# Executáveis compilados
+programa
+**/programa
+
+# Arquivos objeto
+*.o
+*.obj
+
+# Arquivos temporários do sistema
+.DS_Store
+Thumbs.db
